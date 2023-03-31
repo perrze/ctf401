@@ -1,0 +1,182 @@
+openapi: 3.1.0
+info:
+  title: Swagger CTF players - OpenAPI 3.1
+  description: This API was made to defint our project's interface contract for the player's part. Tou will find the URLs we will use to make our requests and build our python API.
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://petstore3.swagger.io/api/v3
+tags:
+  - name: players
+paths:
+  /players:
+    get:
+      tags:
+        - players
+      summary: Return all players
+      operationId: listPlayers
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Players'
+  /players/{id_player}:
+    get:
+      tags:
+        - players
+      summary: Return all infos for a specific player id
+      operationId: PlayerById
+      parameters:
+        - name: id_player
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        '405':
+          description: Invalid input
+    delete:
+      tags:
+        - players
+      description: Delete player
+      operationId: delPlayer
+      parameters:
+        - in: path
+          name: id_player
+          schema:
+              type: string
+          required: true
+          description: string id of player to delete
+      responses:
+          200:
+              description: player has been deleted
+    patch:
+      tags:
+        - players
+      summary: Partially Update a player
+      operationId: patchPlayer
+      parameters:
+        - name: id_player
+          in: path
+          description: Player's ID (the one we will update)
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Modifie un utilisateur existant
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Players'
+      responses:
+        default:
+          description: successful operation
+    put:
+      tags:
+        - players
+      summary: Mise à jour des informations utilisateur
+      description: ''
+      operationId: updateUtilisateur
+      parameters:
+        - name: nom
+          in: path
+          description: Player's ID (the one we will update)
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update a player
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Player'
+      responses:
+        default:
+          description: successful operation
+  /players/challenges:
+    post:
+      tags:
+        - players
+      summary: Return all players that completed a challenge
+      requestBody:
+        description: Challenge you want to see
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Challenge"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Players"
+        '405':
+          description: Invalid input
+  
+components:
+  schemas:
+    Players :
+      type: array
+      items: 
+        $ref: "#/components/schemas/Player"
+    Player:
+      type: object
+      properties:
+        id_player:
+          type: integer
+        id_user:
+          type: integer
+        list_id_chall_reussi:
+          type: array
+          items:
+            type: string
+            example: Fl@g_!
+        list_id_chall_try:
+          type: array
+          items:
+            type: string
+            example: Fl@g_!
+        id_game:
+          type: integer
+    Challenge:
+      type: object
+      properties:
+        id_challenge:
+          type: string
+          example: 01
+        chall_name:
+          type: string
+          example: this is an example
+        description:
+          type: string
+          example: this is a description on my example
+        nb_point:
+          type: integer
+          example: 450000
+        creator:
+          type: string
+          example: this is my example's creator
+        solution:
+          type: string
+          example: Fl@g_!
+    Challenges:
+      type: array
+      items:
+        $ref: "#/components/schemas/Challenges"
