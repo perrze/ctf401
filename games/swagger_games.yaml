@@ -96,7 +96,7 @@ paths:
         - games
       summary: Modifies the game file
       description: Modifies the game file
-      operationId: NewGame
+      operationId: ModifyGame
       parameters:
         - in: path
           name: id_game
