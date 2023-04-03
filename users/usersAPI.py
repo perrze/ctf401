@@ -8,7 +8,6 @@ from flask import Flask,jsonify,request
 user={
   "id_user": "9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5",
   "email": "john.doe@example.com",
-  "username": "jdoe",
   "password": "2986b7f0cd0ba9827ace0810c8818825",
   "roles": [
     [
@@ -23,7 +22,6 @@ users=[
   {
     "id_user": "9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5",
     "email": "john.doe@example.com",
-    "username": "jdoe",
     "password": "2986b7f0cd0ba9827ace0810c8818825",
     "roles": [
       [
