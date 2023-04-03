@@ -1,0 +1,22 @@
+version: "1.0"
+services:
+  users:
+    build: ./users
+    ports:
+      - 5001:5000
+  players:
+    build: ./players
+    ports:
+      - 5002:5000
+  teams:
+    build: ./teams
+    ports:
+      - 5003:5000
+  challenges:
+    build: ./challenges
+    ports:
+      - 5004:5000
+  games:
+    build: ./games
+    ports:
+      - 5005:5000
