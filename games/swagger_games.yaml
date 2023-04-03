@@ -89,7 +89,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Games'
-                
+
 
     patch:
       tags:
@@ -177,7 +177,7 @@ components:
     Games:
       type: object
       properties:
-        id_jeu:
+        id_game:
           type: integer
           format: int64
           example: 4a28ce6b-312b-4bb0-a394-0cd2d03ca31a
@@ -216,7 +216,7 @@ components:
     GamesPatch:
       type: object
       properties:
-        id_jeu:
+        id_game:
           type: integer
           format: int64
           example: 4a28ce6b-312b-4bb0-a394-0cd2d03ca31a
@@ -243,7 +243,7 @@ components:
     GamesCreate:
       type: object
       properties:
-        id_jeu:
+        id_game:
           type: integer
           format: int64
           example: 8a28ce6b-312b-4bb0-a394-0cd2d03ca31b
