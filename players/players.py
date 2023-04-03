@@ -3,6 +3,24 @@ from flask import Flask
 app = Flask(__name__)
 
 
+player = [
+  {
+    "id_player": 0,
+    "id_user": 0,
+    "list_id_chall_reussi": [
+      "Fl@g_!"
+    ],
+    "list_id_chall_try": [
+      "Fl@g_!"
+    ],
+    "id_game": 0
+  }
+]
+
+
+
+
+
 @app.route('/')
 def hello_world():  # put application's code here
     return 'Hello World!'
