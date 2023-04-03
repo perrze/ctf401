@@ -35,6 +35,33 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Games'
+  
+  /games/{id_game}:
+    get:
+      tags:
+        - games
+      summary: return the game info
+      description: return the game info
+      operationId: ReturnGame
+      parameters:
+        - in: path
+          name: id_game
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Game ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Games'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Games'
 
   /games/{id_game}/dates:
     get:
@@ -63,34 +90,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/GamesDates'
 
-  /games/{id_game}:
-    get:
-      tags:
-        - games
-      summary: return the game info
-      description: return the game info
-      operationId: ReturnGame
-      parameters:
-        - in: path
-          name: id_game
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
-          description: Game ID
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Games'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Games'
-
-
+  /games/modify/{id_game}:
     patch:
       tags:
         - games
