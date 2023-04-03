@@ -32,8 +32,8 @@ player2 = {
 }
 
 player3 = {
-    "id_player": 'e795512c-db6c-4bbe-8a4c-544107dfffff',
-    "id_user": '71335eb2-4360-4515-bd7d-894da5e24e19',
+    "id_player": '5d8422a8-8246-4f1c-a904-62d83cad9c0b',
+    "id_user": 'ada44e53-3374-450f-8b23-6cf9e914305b',
     "list_id_chall_reussi": [
         "Fl@g_!"
     ],
@@ -45,6 +45,26 @@ player3 = {
 }
 
 players = [player1, player2, player3]
+
+team1 = {
+    "id_team": "028ef291-4b15-4363-9fc9-444372676a44",
+    "id_game": "365f2236-0ffc-496c-8260-e878dbd15a9c",
+    "name": "Team A",
+    "description": "Team A, our friends are Team B and Team C. Together we make Team ABC",
+    "members": [
+        "5d8422a8-8246-4f1c-a904-62d83cad9c0b",
+        "e795512c-db6c-4bbe-8a4c-544107d24f0f"
+    ]
+}
+
+game1 = {
+  "id_game": "365f2236-0ffc-496c-8260-e878dbd15a9c",
+  "start_date": "2023-04-03T22:00:00.000Z",
+  "end_date": "2023-04-04T22:00:00.000Z",
+  "name": "1st game",
+  "description": "This is our first game. please be kind",
+  "logo": "/dev/null"
+}
 
 
 # Get data from DB :
@@ -151,24 +171,23 @@ def managePlayers(id):
         player = getPlayerById(id)
     return 'coucou'
     # TODO managePlayers
-    # return somedata
 
 
 @app.route('/players/challenges', methods=['POST'])
 def getPlayersByChallenge():
-    return 'coucou'
+    return players
     # TODO getPlayersByChallenge
 
 
 @app.route('/players/team/<id>', methods=['GET'])
 def getTeamByPlayer(id):
-    return 'coucou'
+    return team1
     # TODO getTeamByPlayer
 
 
 @app.route('/players/game/<id>', methods=['GET'])
 def getGameByPlayer(id):
-    return 'coucou'
+    return game1
     # TODO getGameByPlayer
 
 

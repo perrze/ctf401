@@ -158,7 +158,7 @@ paths:
       tags:
         - players
       summary: Return all players that completed a challenge (optional)
-      description: The purpose of this URL is to retrieve every user that completed a challenge. It takes a 'Challenge' type object as a parameter of the post request and returns an array of 'Player' type objects. The result will be processed by our python script to return the correct values.
+      description: The purpose of this URL is to retrieve every player that completed a challenge. It takes a 'Challenge' type object as a parameter of the post request and returns an array of 'Player' type objects. The result will be processed by our python script to return the correct values.
       requestBody:
         description: Challenge you want to see
         content:
@@ -180,7 +180,7 @@ paths:
       tags:
         - players
       summary: Retrieve a player's team
-      description: This URL allows us to see which team a player's on. It needs the name of the player in the URL to work.
+      description: This URL allows us to see which team a player's on. It needs the id of the player in the URL to work.
       operationId: playerTeam
       parameters:
         - name: id_player
@@ -252,7 +252,7 @@ components:
       properties:
         id_challenge:
           type: string
-          example: 01
+          example: uuid
         chall_name:
           type: string
           example: this is an example
@@ -303,7 +303,7 @@ components:
         description:
           type: string
           example: this is an example team
-        membres:
+        members:
           type: array
           items:
             $ref: "#/components/schemas/Player/properties/id_player"
