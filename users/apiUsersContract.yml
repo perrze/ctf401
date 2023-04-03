@@ -47,10 +47,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: 'john.doe@example.com'
+                password:
+                  type: string
+                  format: password
+                  example: '2986b7f0cd0ba9827ace0810c8818825'
+                roles:
+                  type: array
+                  items: 
+                    $ref : '#/components/schemas/Roles'
+                description:
+                  type: string
+                  example: 'I am John Doe'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/User'
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: 'john.doe@example.com'
+                password:
+                  type: string
+                  format: password
+                  example: '2986b7f0cd0ba9827ace0810c8818825'
+                roles:
+                  type: array
+                  items: 
+                    $ref : '#/components/schemas/Roles'
+                description:
+                  type: string
+                  example: 'I am John Doe'
       responses:
         default:
           description: successful operation
@@ -284,10 +316,8 @@ components:
           format: jwt
           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
     Roles:
-          type: array
-          items:
-            type: string
-          example: ['admin','player']
+      type: array
+      example: admin
     ApiResponse:
       type: object
       properties:
