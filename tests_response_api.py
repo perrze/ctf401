@@ -1,3 +1,4 @@
+#!/bin/python3
 import requests
 from os import getenv
 urlHere='http://localhost:'
