@@ -163,6 +163,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
+        '404':
+          description: ID not found
+        '405':
+          description: Invalid input
   /challenges/{id}/status:
     get:
       tags:
@@ -186,7 +190,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-  /challenges/{id_game}:
+        '404':
+          description: ID not found
+  /challenges/games/{id_game}:
     get:
       tags:
         - challenges
@@ -209,7 +215,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Challenges'
-  /challenges/{id_game}/{status}:
+        '404':
+          description: ID game not found
+  /challenges/games/{id_game}/{status}:
     get:
       tags:
         - challenges
@@ -242,7 +250,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Challenges'
-  /challenges/{id_game}/{tag}:
+        '404':
+          description: Not found
+  /challenges/games/{id_game}/tags:
     get:
       tags:
         - challenges
@@ -258,7 +268,7 @@ paths:
             format: uuid
             example: 'a682b3d6-50cd-4f26-91fd-2eb66c249303'
           description: Game ID
-        - in: path
+        - in: query
           name: tag
           required: true
           schema:
