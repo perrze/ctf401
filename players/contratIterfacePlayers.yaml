@@ -235,7 +235,7 @@ components:
           type: string
         username:
           type: string
-        list_id_chall_reussi:
+        list_id_chall_success:
           type: array
           items:
             type: string
