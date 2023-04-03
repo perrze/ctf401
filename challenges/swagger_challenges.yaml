@@ -1,0 +1,244 @@
+openapi: 3.1.0
+info:
+  title: CTF401 - API CHALLENGES
+  description: |-
+    API Challenges documentation for the project "CTF401". 
+
+    Some useful links:
+    - [Discord](https://discord.gg/pvkHnzk7)
+    - [Trello](https://trello.com/b/K8nrKpmh)
+    - [GitHub](https://github.com/perrze/ctf401)
+
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: sarah.dambielle@etudiant.univ-rennes1.fr
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://localhost:5000
+tags:
+  - name: challenges
+    description: Informations sur les challenges du CTF
+paths:
+  /challenges:
+    get:
+      tags:
+        - challenges
+      summary: Return all CTF challenges
+      description: Return all CTF challenges
+      operationId: getChallenges
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challenges'
+    post:
+      tags:
+        - challenges
+      summary: Create a new CTF challenge
+      description: Create a new CTF challenge
+      operationId: createChallenge
+      requestBody:
+        description: Create CTF challenge
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Challenge'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Challenge'
+      responses: 
+        '200':
+            description: Challenge created
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Challenge'
+        '405':
+            description: Invalid input
+  /challenges/{id}:
+    get:
+      tags:
+        - challenges
+      summary: Return CTF challenge by ID
+      description: Retourne CTF challenge by ID
+      operationId: getChallengeByID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Challenge ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challenges'
+    patch:
+      tags:
+        - challenges
+      summary: Modify CTF challenge's information by ID
+      description: Modify CTF challenge's information by ID
+      operationId: modifyChallengeByID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Challenge ID
+      requestBody:
+        description: Modify CTF challenge's information by ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Challenge'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Challenge'
+      responses: 
+        '200':
+            description: User modified
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Challenge'
+        '405':
+            description: Invalid input
+    delete:
+      tags:
+        - challenges
+      summary: Delete CTF challenge's information by ID
+      description: Delete CTF challenge's information by ID
+      operationId: deleteChallengeByID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Challenge ID
+      responses:
+        '200': 
+          description: User deleted
+        '400':
+          description: Invalid ID
+        '404':
+          description: ID Not Found
+  /challenges/{status}:
+    get:
+      tags:
+        - challenges
+      summary: Return CTF challenges by status
+      description: Retourne CTF challenges by status
+      operationId: getChallengesByStatus
+      parameters:
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: string
+            enum:
+              - active
+              - inactive
+            example: 'active'
+          description: Challenge status
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challenges'
+  /challenges/{level}:
+    get:
+      tags:
+        - challenges
+      summary: Return CTF challenges by level
+      description: Retourne CTF challenges by level
+      operationId: getChallengesByTag
+      parameters:
+        - in: path
+          name: level
+          required: true
+          schema:
+            type: string
+            enum:
+              - easy
+              - medium
+              - hard
+              - super-hard
+            example: 'easy'
+          description: Challenge level
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challenges'
+components:
+  schemas:
+    Challenge:
+      type: object
+      properties:
+        id_challenge:
+          type: string
+          format: uuid
+          example: 'a682b3d6-50cd-4f26-91fd-2eb66c249301'
+          description: 'Challenge ID'
+        level:
+          type: string
+          example: 'easy'
+          description: 'Challenge level'
+        category:
+          type: string
+          example: 'Réseaux, Sécurité'
+          description: 'Challenge categories'
+        nb_points:
+          type: integer
+          example: 300
+          description: 'Number of points won after solving the challenge'
+        createur:
+          type: string
+          example: 'clasheureux'
+          description: 'Challenge creator'
+        name:
+          type: string
+          example: 'Analyser des paquets'
+          description: 'Challenge name'
+        description:
+          type: string
+          example: 'Analyser des paquets pour trouver le flag !'
+          description: 'Challenge description'
+        flag:
+          type: string
+          example: 'IUTSM'
+          description: 'Challenge solution'
+        status:
+          type: boolean
+          example: True
+          descritpion: 'Activate or desactivate the challenge'
+      xml:
+        name: challenge
+    Challenges:
+      type: array
+      items: 
+        $ref: "#/components/schemas/Challenge"
+      xml: challenges
