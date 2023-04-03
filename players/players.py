@@ -11,7 +11,8 @@ player1 = {
     "list_id_chall_try": [
         "Fl@g_!"
     ],
-    "id_game": '365f2236-0ffc-496c-8260-e878dbd15a9c'
+    "id_game": '365f2236-0ffc-496c-8260-e878dbd15a9c',
+    "username": "toto"
 }
 
 player2 = {
@@ -23,7 +24,8 @@ player2 = {
     "list_id_chall_try": [
         "Fl@g_!"
     ],
-    "id_game": '672121d3-62dd-4d43-8cc5-f76377c4cfe6'
+    "id_game": '672121d3-62dd-4d43-8cc5-f76377c4cfe6',
+    "username": 'titi'
 }
 
 
@@ -46,7 +48,7 @@ def createPlayers():
     # rq = request.get_json()
     # print(rq)
     # return rq
-    # # TODO createPlayers
+    # # TODO createPlayers, update the database
 
 
 @app.route('/players/manage/<id>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
