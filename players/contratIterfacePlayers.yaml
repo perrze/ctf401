@@ -31,6 +31,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Players'
+  /players/create:
+    post:
+      tags:
+        - players
+      summary: Create player
+      description: This URL can create a player. It takes 3 parameters (id_user, username and id_game) and will return the created player.
+      operationId: createPlayer
+      requestBody:
+        description: player's info
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_user:
+                  type: string
+                username:
+                  type: string
+                id_game:
+                  type: string
+        required: true
+      responses:
+        '200':
+          description: Successful operation, the player have been added to the database.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+        '405':
+          description: Bad informations were given
+          
   /players/manage/{id_player}:
     get:
       tags:
@@ -87,10 +118,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Players'
+              $ref: '#/components/schemas/Player'
+        required: true
       responses:
-        default:
+        '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
     put:
       tags:
         - players
@@ -110,9 +146,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Player'
+        required: true
       responses:
-        default:
+        '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
   /players/challenges:
     post:
       tags:
@@ -125,6 +166,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Challenge"
+        required: true
       responses:
         '200':
           description: Successful operation
@@ -138,7 +180,7 @@ paths:
     get:
       tags:
         - players
-      summary: retrieve a player's team
+      summary: Retrieve a player's team
       description: This URL allows us to see which team a player's on. It needs the name of the player in the URL to work.
       operationId: playerTeam
       parameters:
@@ -151,6 +193,10 @@ paths:
       responses:
         '200':
           description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
         '405':
           description: Bad id given
   /players/game/{id_player}:
@@ -158,7 +204,7 @@ paths:
       tags:
         - players
       summary: Retrieve the game of a player
-      description: This URL will allow us to see if the player is playing in a game and if he is, we will see which game it is. It'll need a player ID in the URL and will return an array of 'Player' type objects.
+      description: This URL will allow us to see if the player is playing in a game and if he is, we will see which game it is. It'll need a player ID in the URL and will return an array of 'Game' type objects.
       operationId: gamePlayer
       parameters:
         - name: id_player
@@ -173,7 +219,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Players'
+                $ref: '#/components/schemas/Game'
 
 components:
   schemas:
@@ -185,9 +231,11 @@ components:
       type: object
       properties:
         id_player:
-          type: integer
+          type: string
         id_user:
-          type: integer
+          type: string
+        username:
+          type: string
         list_id_chall_reussi:
           type: array
           items:
@@ -199,7 +247,7 @@ components:
             type: string
             example: Fl@g_!
         id_game:
-          type: integer
+          $ref: "#/components/schemas/Game/properties/id_game"
     Challenge:
       type: object
       properties:
@@ -224,4 +272,39 @@ components:
     Challenges:
       type: array
       items:
-        $ref: "#/components/schemas/Challenges"
+        $ref: "#/components/schemas/Challenge"
+    Game :
+      type: object
+      properties:
+        id_game:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+          example: path to the logo
+    Team:
+      type: object
+      properties:
+        id_team:
+          type: string
+        id_game:
+          $ref: "#/components/schemas/Game/properties/id_game"
+        name:
+          type: string
+          example: example team
+        description:
+          type: string
+          example: this is an example team
+        membres:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player/properties/id_player"
