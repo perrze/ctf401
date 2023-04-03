@@ -1,0 +1,241 @@
+openapi: 3.1.0
+info:
+  title: Swagger CTF Games - OpenAPI 3.1
+  description: This API was made to defint our project's interface contract for the games's part. Tou will find the URLs we will use to make our requests and build our python API.
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://localhost:5000
+tags:
+  - name: games
+    description: all about the game
+paths:
+  /games:
+    get:
+      tags:
+        - games
+      summary: returns all games data
+      description: returns all games data
+      operationId: ReturnAll
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Games'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Games'
+
+  /games/{id_game}/dates:
+    get:
+      tags:
+        - games
+      summary: returns the dates of the game 
+      description: returns the dates of the game 
+      operationId: ReturnDates
+      parameters:
+        - in: path
+          name: id_game
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Game ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamesDates'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GamesDates'
+
+  /games/{id_game}:
+    patch:
+      tags:
+        - games
+      summary: Modifies the game file
+      description: Modifies the game file
+      operationId: NewGame
+      parameters:
+        - in: path
+          name: id_game
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Game ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamesPatch'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GamesPatch'
+      
+  
+  /games/create:
+   post:
+      tags:
+        - games
+      summary: Create a new Game
+      description: Create a new Game
+      operationId: createGames
+      requestBody:
+        description: Create Game
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GamesCreate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/GamesCreate'
+      responses: 
+        '200':
+            description: Game created
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/GamesCreate'
+        '405':
+            description: Invalid input
+
+
+  /games/{id_game}/delete:
+   delete:
+      tags:
+        - games
+      summary: Delete Game by ID
+      description: Delete Game by ID
+      operationId: deleteGameByID
+      parameters:
+        - in: path
+          name: id_game
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Game ID
+      responses:
+        '200': 
+          description: Game deleted
+        '400':
+          description: Invalid ID
+        '404':
+          description: ID Not Found
+
+
+
+
+components:
+  schemas:
+    Games:
+      type: object
+      properties:
+        id_jeu:
+          type: integer
+          format: int64
+          example: 4a28ce6b-312b-4bb0-a394-0cd2d03ca31a
+        date_start:
+          type: string
+          format: date-time
+        date_end:
+          type: string
+          format: date-time
+        name_game:
+          type: string
+          format: date-time
+          example: The First
+        description:
+          type: string
+          example: The First Game Of the Year
+        logo:
+          type: string
+          example: /user/logo.png
+          description: logo path
+      xml:
+        name: order
+
+    GamesDates:
+      type: object
+      properties:
+        date_start:
+          type: string
+          format: date-time
+        date_end:
+          type: string
+          format: date-time
+      xml:
+        name: order
+
+    GamesPatch:
+      type: object
+      properties:
+        id_jeu:
+          type: integer
+          format: int64
+          example: 4a28ce6b-312b-4bb0-a394-0cd2d03ca31a
+        date_start:
+          type: string
+          format: date-time
+        date_end:
+          type: string
+          format: date-time
+        name_game:
+          type: string
+          format: date-time
+          example: The First
+        description:
+          type: string
+          example: The Second Game Of the Year
+        logo:
+          type: string
+          example: /user/logo2.png
+          description: logo path
+      xml:
+        name: order
+
+    GamesCreate:
+      type: object
+      properties:
+        id_jeu:
+          type: integer
+          format: int64
+          example: 8a28ce6b-312b-4bb0-a394-0cd2d03ca31b
+        date_start:
+          type: string
+          format: date-time
+        date_end:
+          type: string
+          format: date-time
+        name_game:
+          type: string
+          format: date-time
+          example: The First
+        description:
+          type: string
+          example: The Second Game Of the Year
+        logo:
+          type: string
+          example: /user/logo2.png
+          description: logo path
+      xml:
+        name: order
