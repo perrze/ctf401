@@ -46,6 +46,57 @@ player3 = {
 
 players = [player1, player2, player3]
 
+
+# Get data from DB :
+
+def getPlayerById(id):
+    for player in players:
+        if id == (player['id_player']):
+            return player
+    return "No Player found", 400
+
+
+# DB modification :
+def addPlayer(verifiedPlayer):
+    players.append(verifiedPlayer)
+    # TODO get it working with a DB
+
+
+# check values :
+def uuidIsCorrect(uuid):
+    regex_uuid = re.compile(r"^[0-9a-zA-Z]{8}(-[0-9a-zA-Z]{4}){3}-[0-9a-zA-Z]{12}$")
+    if type(uuid) is not str:
+        return False
+    elif not regex_uuid.match(uuid):
+        return False
+    return True
+
+
+def usernameIsCorrect(username):
+    regex_username = re.compile(r"^[\w\d\-]{3,32}$")
+    if type(username) is not str:
+        return False
+    elif not regex_username.match(username):
+        return False
+    return True
+
+
+def requestIsCorrect(valid_key_list, rq):
+    provided_key = []
+    print("test")
+    try:
+        for key in rq:
+            if key not in valid_key_list:
+                return False
+            provided_key.append(key)
+        if provided_key is valid_key_list:
+            return False
+        return True
+    except KeyError:
+        return False
+
+
+# API
 @app.route('/')
 def hello_world():  # put application's code here
     return 'Welcome to the players API!'
@@ -69,23 +120,20 @@ def createPlayers():
     }
     valid_key = ["id_user", "username", "id_game"]
     rq = request.get_json()
-    provided_key = []
-    regex_uuid = re.compile(r"^[0-9a-zA-Z]{8}(-[0-9a-zA-Z]{4}){3}-[0-9a-zA-Z]{12}$")
-    regex_username = re.compile(r"^[\w\d\-]{3,32}$")
-    for key in rq:
-        if key in valid_key:
-            provided_key.append(key)
-        else:
-            return "Bad informations were given", 405
-        if provided_key == valid_key:
-            if regex_uuid.match(rq['id_user']) and regex_uuid.match(rq['id_game']) and regex_username.match(rq['username']):
-                createdPlayer['id_user'] = rq['id_user']
-                createdPlayer['id_game'] = rq['id_game']
-                createdPlayer['username'] = rq['username']
-                players.append(createdPlayer)
-                
+
+    if not requestIsCorrect(valid_key, rq):
+        return "Bad informations were given", 405
+
+    if not uuidIsCorrect(rq['id_user']) or not uuidIsCorrect(rq['id_game']) or not usernameIsCorrect(rq['username']):
+        return "Bad informations were given", 405
+
+    createdPlayer['id_user'] = rq['id_user']
+    createdPlayer['id_game'] = rq['id_game']
+    createdPlayer['username'] = rq['username']
+    addPlayer(createdPlayer)
+
     return createdPlayer
-    # TODO createPlayers, update the database
+    # TODO creation is working
 
 
 @app.route('/players/manage/<id>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
@@ -126,11 +174,3 @@ def getGameByPlayer(id):
 
 if __name__ == '__main__':
     app.run()
-
-# Méthodes de récupération de données :
-
-def getPlayerById(id):
-    for player in players:
-        if id == (player['id_player']):
-            return player
-    return "No Player found", 400
