@@ -31,7 +31,20 @@ player2 = {
     "username": 'titi'
 }
 
-players = [player1,player2]
+player3 = {
+    "id_player": 'e795512c-db6c-4bbe-8a4c-544107dfffff',
+    "id_user": '71335eb2-4360-4515-bd7d-894da5e24e19',
+    "list_id_chall_reussi": [
+        "Fl@g_!"
+    ],
+    "list_id_chall_try": [
+        "Fl@g_!"
+    ],
+    "id_game": '365f2236-0ffc-496c-8260-e878dbd15a9c',
+    "username": 'tata'
+}
+
+players = [player1, player2, player3]
 
 @app.route('/')
 def hello_world():  # put application's code here
@@ -40,7 +53,6 @@ def hello_world():  # put application's code here
 
 @app.route('/players', methods=['GET'])
 def getPlayers():
-
     return jsonify(players)
     # TODO getPlayers, get data from DB
 
@@ -78,6 +90,17 @@ def createPlayers():
 
 @app.route('/players/manage/<id>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
 def managePlayers(id):
+    if request.method == 'GET':
+        player = getPlayerById(id)
+        return jsonify(player)
+
+    if request.method == 'DELETE':
+        player = getPlayerById(id)
+        players.remove(player)
+        return jsonify(players)
+
+    if request.method == 'PUT':
+        player = getPlayerById(id)
     return 'coucou'
     # TODO managePlayers
     # return somedata
@@ -103,3 +126,11 @@ def getGameByPlayer(id):
 
 if __name__ == '__main__':
     app.run()
+
+# Méthodes de récupération de données :
+
+def getPlayerById(id):
+    for player in players:
+        if id == (player['id_player']):
+            return player
+    return "No Player found", 400
