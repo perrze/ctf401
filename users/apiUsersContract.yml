@@ -15,13 +15,30 @@ externalDocs:
 servers:
   - url: https://ctf401.bb0.fr
 tags:
-  - name: user
-    description: Operations about user
+  - name: users
+    description: Operations about users
 paths:
-  /user:
+  /users:
+    get:
+      tags:
+        - users
+      summary: List all users
+      description: ''
+      operationId: listUsers
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+        '400':
+          description: Invalid username/password supplied
+
+  /users/create:
     post:
       tags:
-        - user
+        - users
       summary: Create user
       description: Can only be used by an admin
       operationId: createUser
@@ -41,10 +58,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-  /user/login:
+  /users/login:
     get:
       tags:
-        - user
+        - users
       summary: Logs user into the system
       description: ''
       operationId: loginUser
@@ -74,25 +91,24 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+                $ref: '#/components/schemas/Jwt'
         '400':
           description: Invalid username/password supplied
-  /user/logout:
+  /users/logout:
     get:
       tags:
-        - user
+        - users
       summary: Logs out current logged in user session
       description: ''
       operationId: logoutUser
       parameters: []
       responses:
-        default:
+        '200':
           description: successful operation
-  /user/{userid}:
+  /users/{userid}:
     get:
       tags:
-        - user
+        - users 
       summary: Get user by user id
       description: ''
       operationId: getUserById
@@ -117,7 +133,7 @@ paths:
           description: User not found
     put:
       tags:
-        - user
+        - users
       summary: Update user
       description: This can only be done by the logged in user.
       operationId: updateUser
@@ -139,11 +155,19 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
       responses:
-        default:
+        '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
     patch:
       tags:
-        - user
+        - users
       summary: Update user
       description: This can only be done by the logged in user.
       operationId: updatePatchUser
@@ -165,11 +189,19 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
       responses:
-        default:
+        '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
     delete:
       tags:
-        - user
+        - users
       summary: Delete user
       description: This can only be done by the logged in user.
       operationId: deleteUser
@@ -181,6 +213,8 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: successful operation
         '400':
           description: Invalid username supplied
         '404':
@@ -188,10 +222,10 @@ paths:
   /users/{userid}/roles:
     get:
       tags:
-        - user
+        - users
       summary: Get roles by user id
       description: ''
-      operationId: getUsersRoleById
+      operationId: getUserRoleById
       parameters:
         - name: userid
           in: path
@@ -243,6 +277,13 @@ components:
         description:
           type: string
           example: 'I am John Doe'
+    Jwt:
+      type: object
+      properties:
+        token:
+          type: string
+          format: jwt
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
     Roles:
           type: array
           items:
