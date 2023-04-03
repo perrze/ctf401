@@ -153,7 +153,7 @@ def createPlayers():
     addPlayer(createdPlayer)
 
     return createdPlayer
-    # TODO creation is working
+    # TODO creation is working to test when DB is on
 
 
 @app.route('/players/manage/<id>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
