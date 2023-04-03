@@ -24,7 +24,7 @@ player2 = {
     "list_id_chall_try": [
         "Fl@g_!"
     ],
-    "id_game": '672121d3-62dd-4d43-8cc5-f76377c4cfe6',
+    "id_game": '365f2236-0ffc-496c-8260-e878dbd15a9c',
     "username": 'titi'
 }
 
@@ -44,11 +44,18 @@ def getPlayers():
 
 @app.route('/players/create', methods=['POST'])
 def createPlayers():
-    # createdPlayer = {}
-    # rq = request.get_json()
+    createdPlayer = {}
+    valid_key = ["id_user", "username", "id_game"]
+    rq = request.get_json()
+    tab_key=[]
+    for key in rq:
+        if key in valid_key:
+            tab_key.append(key)
+        else:
+            return "Bad informations were given", 400
     # print(rq)
-    # return rq
-    # # TODO createPlayers, update the database
+    return jsonify(tab_key)
+    # TODO createPlayers, update the database
 
 
 @app.route('/players/manage/<id>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])

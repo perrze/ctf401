@@ -110,7 +110,6 @@ paths:
         - name: id_player
           in: path
           description: Player's ID (the one we will update)
-          required: true
           schema:
             type: string
       requestBody:
