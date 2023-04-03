@@ -66,9 +66,9 @@ paths:
       description: ''
       operationId: loginUser
       parameters:
-        - name: username
+        - name: email
           in: query
-          description: The user name for login
+          description: The email for login
           required: false
           schema:
             type: string
@@ -200,18 +200,20 @@ paths:
         '404':
           description: User not found
     delete:
+
       tags:
         - users
       summary: Delete user
       description: This can only be done by the logged in user.
       operationId: deleteUser
       parameters:
-        - name: username
+        - name: userid
           in: path
-          description: The name that needs to be deleted
+          description: id to be deleted
           required: true
           schema:
             type: string
+            example: '9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5'
       responses:
         '200':
           description: successful operation
@@ -263,9 +265,6 @@ components:
           type: string
           format: email
           example: 'john.doe@example.com'
-        username:
-          type: string
-          example: 'jdoe'
         password:
           type: string
           format: password
