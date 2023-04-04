@@ -53,11 +53,11 @@ paths:
                 email:
                   type: string
                   format: email
-                  example: 'john.doe@example.com'
+                  example: 'admin@ctf401.fr'
                 password:
                   type: string
                   format: password
-                  example: 'bonjour1'
+                  example: 'Bonjour1@'
                 roles:
                   type: array
                   items: 
@@ -72,11 +72,11 @@ paths:
                 email:
                   type: string
                   format: email
-                  example: 'john.doe@example.com'
+                  example: 'admin@ctf401.fr'
                 password:
                   type: string
                   format: password
-                  example: 'bonjour1'
+                  example: 'Bonjour1@'
                 roles:
                   type: array
                   items: 
@@ -124,17 +124,11 @@ paths:
       responses:
         '200':
           description: successful operation
-          headers:
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Jwt'
-        '400':
+        '401':
           description: Invalid username/password supplied
   /users/logout:
     get:
@@ -161,7 +155,7 @@ paths:
           required: true
           schema:
             type: string
-            example: '9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5'
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
       responses:
         '200':
           description: successful operation
@@ -186,7 +180,7 @@ paths:
           required: true
           schema:
             type: string
-            example: '9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5'
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
       requestBody:
         description: Update an existent user
         content:
@@ -226,7 +220,7 @@ paths:
           required: true
           schema:
             type: string
-            example: '9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5'
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
       requestBody:
         description: Update an existent user
         content:
@@ -267,7 +261,7 @@ paths:
           required: true
           schema:
             type: string
-            example: '9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5'
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
       responses:
         '200':
           description: successful operation
@@ -289,7 +283,7 @@ paths:
           required: true
           schema:
             type: string
-            example: '9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5'
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
       responses:
         '200':
           description: successful operation
@@ -304,6 +298,55 @@ paths:
           description: Invalid id_user supplied
         '404':
           description: User not found
+  /users/check/{access}:
+    post:
+      tags:
+        - users
+      summary: Check user (from JWT) is a role and can access
+      description: Check if the JWT given in the post has access to content linked to the role in url or to the id_user in access (Deleting own account for example)
+      operationId: checkUser
+      parameters:
+        - name: jwt
+          in: header
+          description: JWT Token
+          required: true
+          schema:
+            type: string
+            format: jwt
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        - name: access
+          in: path
+          description: 'The access to be checked'
+          required: true
+          schema:
+            type: string
+            example: 'admin'
+        
+        
+      
+      responses:
+        '200':
+          description: Access granted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hasAccess:
+                    type: boolean
+                    example: True
+
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hasAccess:
+                    type: boolean
+                    example: False
+    
 
 components:
   schemas:
@@ -317,15 +360,15 @@ components:
         id_user:
           type: string
           format: uuid
-          example: '9e9fd408-0bc4-4c41-a3c0-c4e6a0e033d5'
+          example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
         email:
           type: string
           format: email
-          example: 'john.doe@example.com'
+          example: 'admin@ctf401.fr'
         password:
           type: string
           format: password
-          example: '2986b7f0cd0ba9827ace0810c8818825'
+          example: '4c5ad97ad717574cbb7e73da27f72ba9'
         roles:
           type: array
           items: 
@@ -385,5 +428,5 @@ components:
   securitySchemes:
     api_key:
       type: apiKey
-      name: api_key
+      name: jwt
       in: header
