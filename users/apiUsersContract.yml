@@ -35,7 +35,8 @@ paths:
                 $ref: '#/components/schemas/Users'
         '400':
           description: Invalid username/password supplied
-
+      security:
+        - jwt: []
   /users/create:
     post:
       tags:
@@ -99,7 +100,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WhatGood'
-
+      security:
+        - jwt: []
   /users/login:
     get:
       tags:
@@ -167,6 +169,8 @@ paths:
           description: Invalid id_user supplied
         '404':
           description: User not found
+      security:
+        - jwt: []
     put:
       tags:
         - users
@@ -207,6 +211,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WhatGood'
+      security:
+        - jwt: []
     patch:
       tags:
         - users
@@ -247,6 +253,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WhatGood'
+      security:
+        - jwt: []
     delete:
 
       tags:
@@ -269,6 +277,8 @@ paths:
           description: Invalid id_user supplied
         '404':
           description: User not found
+      security:
+          - jwt: []
   /users/{userid}/roles:
     get:
       tags:
@@ -427,7 +437,7 @@ components:
             items:
               $ref: '#/components/schemas/User'
   securitySchemes:
-    api_key:
-      type: apiKey
+    jwt:
+      type: apiKey 
       name: jwt
       in: header

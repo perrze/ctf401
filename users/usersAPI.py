@@ -151,19 +151,22 @@ def encode_jwt(userid, SECRET_KEY):
                        "expire": expire}, SECRET_KEY, algorithm="HS256")
     return token
 
-def check_if_user_access(request,role):
+
+def check_if_user_access(request, role):
   token = None
   if "jwt" in request.headers:
       token = request.headers["jwt"]
   if not token:
       return False
-  result = requests.post(BASE_URL+"/users/check/"+role,json={"token":token})
-  if result.status_code==200:
+  result = requests.post(BASE_URL+"/users/check/"+role, json={"token": token})
+  if result.status_code == 200:
     return True
   else:
     return False
 
 # ----------------------------------- Model ---------------------------------- #
+
+
 def check_email_not_exist(email):
     # Variables
     if (variables):
@@ -306,7 +309,9 @@ def default():
 
 @app.route('/users')
 def listUsers():
-    return jsonify(get_users_list()), 200
+  if not (check_if_user_access(request, "admin")):
+      return "Unauthorized", 401
+  return jsonify(get_users_list()), 200
 
 
 @app.route('/users/create', methods=['POST'])
@@ -365,6 +370,8 @@ def logoutUser():
 
 @app.route('/users/<userid>', methods=['GET'])
 def getUserById(userid):
+    if not(check_if_user_access(request,"admin") and not(check_if_user_access(request,userid))):
+        return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
     user = get_properties_from_userid(userid)
@@ -376,6 +383,8 @@ def getUserById(userid):
 
 @app.route('/users/<userid>', methods=['PUT'])
 def updateUser(userid):
+    if not(check_if_user_access(request,"admin") and not(check_if_user_access(request,userid))):
+        return "Unauthorized", 401
     try:
         data = request.get_json()
     except:
@@ -408,6 +417,8 @@ def updateUser(userid):
 
 @app.route('/users/<userid>', methods=['PATCH'])
 def updatePatchUser(userid):
+    if not(check_if_user_access(request,"admin") and not(check_if_user_access(request,userid))):
+        return "Unauthorized", 401
     try:
         data = request.get_json()
     except:
@@ -478,31 +489,31 @@ def checkUser(access):
     print(token)
     # with open("./test","w") as f:
     #   f.write(token)
-    # try:
-    data = jwt.decode(
-        token, app.config["SECRET_KEY"], algorithms="HS256")
-    # data = jwt.decode(token, 'this is a secret', algorithms="HS256")
-    expire = data["expire"]
-    current_time = time()
-    if current_time > expire:
-        # remove_jwt_db(tokenid)
-        return "Token Expired", 401
+    try:
+      data = jwt.decode(
+          token, app.config["SECRET_KEY"], algorithms="HS256")
+      # data = jwt.decode(token, 'this is a secret', algorithms="HS256")
+      expire = data["expire"]
+      current_time = time()
+      if current_time > expire:
+          # remove_jwt_db(tokenid)
+          return "Token Expired", 401
 
-    userid = data["id_user"]
-    # tokenid=data["id_token"]
-    logging.debug("Data: "+str(data))
-    if userid is None:
+      userid = data["id_user"]
+      # tokenid=data["id_token"]
+      logging.debug("Data: "+str(data))
+      if userid is None:
+          return "Invalid Authentication token!", 401
+      if check_uuid_is_well_formed(access):
+          if access == userid:
+              return jsonify({"hasAccess": True}), 200
+          return jsonify({"hasAccess": False}), 401
+      if check_user_has_role(userid, access):
+          return jsonify({"hasAccess": True}), 200
+      else:
+          return jsonify({"hasAccess": False}), 401
+    except Exception as e:
         return "Invalid Authentication token!", 401
-    if check_uuid_is_well_formed(access):
-        if access == userid:
-            return jsonify({"hasAccess": True}), 200
-        return jsonify({"hasAccess": False}), 401
-    if check_user_has_role(userid, access):
-        return jsonify({"hasAccess": True}), 200
-    else:
-        return jsonify({"hasAccess": False}), 401
-    # except Exception as e:
-    #     return "Invalid Authentication token!", 401
 
 
 # ---------------------------------------------------------------------------- #
