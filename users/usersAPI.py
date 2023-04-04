@@ -7,6 +7,7 @@ import hashlib
 import jwt
 from os import getenv, environ
 from time import time
+import requests
 # ---------------------------------------------------------------------------- #
 #                                 Static Datas                                 #
 # ---------------------------------------------------------------------------- #
@@ -453,19 +454,20 @@ def getUserRoleById(userid):
 
 @app.route('/users/check/<access>', methods=["POST"])
 def checkUser(access):
-    token = None
-    if "jwt" in request.headers:
-        token = request.headers["jwt"]
-    if not token:
-        return "Authentication Token is missing!", 401
+    token=request.get_json()["token"]
+    # token = None
+    # if "jwt" in request.headers:
+    #     token = request.headers["jwt"]
+    # if not token:
+    #     return "Authentication Token is missing!", 401
     logging.debug("Token Received: "+token)
     print(token)
     # with open("./test","w") as f:
     #   f.write(token)
     # try:
-    # data = jwt.decode(
-    #     token, app.config["SECRET_KEY"], algorithms="HS256")
-    data = jwt.decode(token, 'this is a secret', algorithms="HS256")
+    data = jwt.decode(
+        token, app.config["SECRET_KEY"], algorithms="HS256")
+    # data = jwt.decode(token, 'this is a secret', algorithms="HS256")
     expire = data["expire"]
     current_time = time()
     if current_time > expire:
