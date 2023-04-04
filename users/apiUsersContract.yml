@@ -14,6 +14,7 @@ externalDocs:
   url: https://github.com/perrze/ctf401
 servers:
   - url: https://ctf401.bb0.fr
+  - url: http://10.0.0.5:5001
 tags:
   - name: users
     description: Operations about users
@@ -56,7 +57,7 @@ paths:
                 password:
                   type: string
                   format: password
-                  example: '2986b7f0cd0ba9827ace0810c8818825'
+                  example: 'bonjour1'
                 roles:
                   type: array
                   items: 
@@ -84,12 +85,21 @@ paths:
                   type: string
                   example: 'I am John Doe'
       responses:
-        default:
+        '200':
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '400':
+          description: Bad JSON
+        '409':
+          description: Conflict (Email exists or data is not well formed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatGood'
+
   /users/login:
     get:
       tags:
@@ -308,6 +318,24 @@ components:
         description:
           type: string
           example: 'I am John Doe'
+    WhatGood:
+      type: object
+      properties:
+        id_user:
+          type: boolean
+          example: True
+        email:
+          type: boolean
+          example: False
+        password:
+          type: boolean
+          example: True
+        roles:
+          type: boolean
+          example: True
+        description:
+          type: boolean
+          example: True
     Jwt:
       type: object
       properties:
