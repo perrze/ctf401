@@ -151,6 +151,17 @@ def encode_jwt(userid, SECRET_KEY):
                        "expire": expire}, SECRET_KEY, algorithm="HS256")
     return token
 
+def check_if_user_access(request,role):
+  token = None
+  if "jwt" in request.headers:
+      token = request.headers["jwt"]
+  if not token:
+      return False
+  result = requests.post(BASE_URL+"/users/check/"+role,json={"token":token})
+  if result.status_code==200:
+    return True
+  else:
+    return False
 
 # ----------------------------------- Model ---------------------------------- #
 def check_email_not_exist(email):
@@ -275,8 +286,13 @@ if "SECRET_KEY" in environ:
     SECRET_KEY = getenv("SECRET_KEY")
 else:
     SECRET_KEY = 'this is a secret'
+if "BASE_URL" in environ:
+  BASE_URL = getenv("BASE_URL")
+else:
+  BASE_URL = "http://10.0.0.5:5000"
 logging.debug("SECRET_KEY = "+SECRET_KEY)
 app.config['SECRET_KEY'] = SECRET_KEY
+
 
 # ------------------------------------- / ------------------------------------ #
 
@@ -295,6 +311,8 @@ def listUsers():
 
 @app.route('/users/create', methods=['POST'])
 def createUser():
+    if not(check_if_user_access(request,"admin")):
+      return "Unauthorized", 401
     try:
         data = request.get_json()
     except:
@@ -455,11 +473,7 @@ def getUserRoleById(userid):
 @app.route('/users/check/<access>', methods=["POST"])
 def checkUser(access):
     token=request.get_json()["token"]
-    # token = None
-    # if "jwt" in request.headers:
-    #     token = request.headers["jwt"]
-    # if not token:
-    #     return "Authentication Token is missing!", 401
+   
     logging.debug("Token Received: "+token)
     print(token)
     # with open("./test","w") as f:
