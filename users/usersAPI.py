@@ -478,31 +478,31 @@ def checkUser(access):
     print(token)
     # with open("./test","w") as f:
     #   f.write(token)
-    # try:
-    data = jwt.decode(
-        token, app.config["SECRET_KEY"], algorithms="HS256")
-    # data = jwt.decode(token, 'this is a secret', algorithms="HS256")
-    expire = data["expire"]
-    current_time = time()
-    if current_time > expire:
-        # remove_jwt_db(tokenid)
-        return "Token Expired", 401
+    try:
+      data = jwt.decode(
+          token, app.config["SECRET_KEY"], algorithms="HS256")
+      # data = jwt.decode(token, 'this is a secret', algorithms="HS256")
+      expire = data["expire"]
+      current_time = time()
+      if current_time > expire:
+          # remove_jwt_db(tokenid)
+          return "Token Expired", 401
 
-    userid = data["id_user"]
-    # tokenid=data["id_token"]
-    logging.debug("Data: "+str(data))
-    if userid is None:
+      userid = data["id_user"]
+      # tokenid=data["id_token"]
+      logging.debug("Data: "+str(data))
+      if userid is None:
+          return "Invalid Authentication token!", 401
+      if check_uuid_is_well_formed(access):
+          if access == userid:
+              return jsonify({"hasAccess": True}), 200
+          return jsonify({"hasAccess": False}), 401
+      if check_user_has_role(userid, access):
+          return jsonify({"hasAccess": True}), 200
+      else:
+          return jsonify({"hasAccess": False}), 401
+    except Exception as e:
         return "Invalid Authentication token!", 401
-    if check_uuid_is_well_formed(access):
-        if access == userid:
-            return jsonify({"hasAccess": True}), 200
-        return jsonify({"hasAccess": False}), 401
-    if check_user_has_role(userid, access):
-        return jsonify({"hasAccess": True}), 200
-    else:
-        return jsonify({"hasAccess": False}), 401
-    # except Exception as e:
-    #     return "Invalid Authentication token!", 401
 
 
 # ---------------------------------------------------------------------------- #
