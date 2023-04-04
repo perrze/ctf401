@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import uuid
+import re
 
 app = Flask(__name__)
 
@@ -31,6 +32,11 @@ CHALLENGES = [
 	"files": "/user/file1.png",
 	"status": False}]
 
+regex_int = r"^[1-9][0-9]+$"
+regex_status = r"^(([Ff]alse)|([Tt]rue))$"
+regex_list = r"^([a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ ]+, )*([ a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ]+)$"
+regex_uuid = r"^[0-9a-zA-Z]{8}(-[0-9a-zA-Z]{4}){3}-[0-9a-zA-Z]{12}$"
+
 @app.route("/")
 def index():
 	return "Welcome to API Challenges"
@@ -45,17 +51,20 @@ def createChallenge():
 	if request.method == 'POST':
 		response = request.get_json()
 		id_chal = uuid.uuid4()
-		level = response['level']
-		category = response['category']
+		id_game = response['id_game']
+		tags = response['tags']
 		nb_points = response['nb_points']
 		creator = response['creator']
 		name = response['name']
 		description = response['description']
 		flag = response['flag']
 		status = response['status']
-		challenge = {"id_challenge": id_chal, "level": level, "category": category, "nb_points": nb_points, "creator": creator, "name": name, "description": description, "flag": flag, "status": status}
-		CHALLENGES.append(challenge)
-		return jsonify({'200':"Challenge created"})
+		if ((re.match(regex_status, str(status))) and (re.match(regex_int, str(nb_points))) and (re.match(regex_list, str(tags))) and (re.match(regex_uuid, str(id_game))) and creator.strip() and name.strip() and description.strip() and flag.strip()) :
+			challenge = {"id_challenge": id_chal, "id_game": id_game, "tags": tags, "nb_points": nb_points, "creator": creator, "name": name, "description": description, "flag": flag, "status": status}
+			CHALLENGES.append(challenge)
+			return jsonify({'200':"Challenge created"})
+		else :
+			return jsonify({'404':"Challenge could not be created"})
 
 @app.route("/challenges/<id>", methods=['GET'])
 def getChallengeByID(id):
@@ -68,14 +77,43 @@ def getChallengeByID(id):
 @app.route("/challenges/<id>", methods=['PATCH'])
 def modifyChallengeByID(id):
 	id_chal = id
+	errors = []
 	for challenge in CHALLENGES :
 		if (challenge['id_challenge'] == id_chal) :
 			response = request.get_json()
 			for key, value in response.items():
-				if key in challenge:
-					challenge[key] = value
-					return jsonify({'200':"Challenge Modified"})
-	return jsonify({'404':"ID not found"})
+				if key != 'id_challenge' :
+					if key in challenge:
+						if (key=='nb_points'):
+							if (re.match(str(regex_int), str(value))):
+								challenge[key] = value
+							else:
+								errors.append(f"Invalid value for {key}")
+						elif (key=='status'):
+							if (re.match(regex_status, str(value))):
+								challenge[key] = value
+							else:
+								errors.append(f"Invalid value for {key}")
+						elif (key=='tags'):
+							if (re.match(regex_list, str(value))):
+								challenge[key] = value
+							else:
+								errors.append(f"Invalid value for {key}")
+						elif (key=='id_game'):
+							if (re.match(regex_uuid, str(value))):
+								challenge[key] = value
+							else:
+								errors.append(f"Invalid value for {key}")
+						else:
+							challenge[key] = value
+					else :
+						return jsonify({'405':"Invalid input"})
+				else:
+					return jsonify({'404':"Impossible to change Challenge ID"})
+		if errors :
+			return jsonify({'405':"Invalid input", 'errors': errors})
+		else :
+			return jsonify({'200':"Challenge modified"})
 
 @app.route("/challenges/<id>", methods=['DELETE'])
 def deleteChallengeByID(id):
