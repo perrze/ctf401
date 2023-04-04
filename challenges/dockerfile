@@ -1,0 +1,8 @@
+FROM python:3.9
+WORKDIR /app
+COPY api_challenges.py /app/api_challenges.py
+COPY requirements.txt /app/requirements.txt
+RUN python -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+RUN pip install --no-cache-dir -r requirements.txt 
+CMD ["flask", "--app", "/app/api_challenges", "run", "--host=0.0.0.0"]
