@@ -284,6 +284,7 @@ paths:
           schema:
             type: string
             example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
+      
       responses:
         '200':
           description: successful operation
@@ -306,24 +307,24 @@ paths:
       description: Check if the JWT given in the post has access to content linked to the role in url or to the id_user in access (Deleting own account for example)
       operationId: checkUser
       parameters:
-        - name: jwt
-          in: header
-          description: JWT Token
-          required: true
-          schema:
-            type: string
-            format: jwt
-            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
         - name: access
           in: path
           description: 'The access to be checked'
           required: true
           schema:
             type: string
-            example: 'admin'
-        
-        
-      
+            example: 'admin' 
+      requestBody:
+        description: Update an existent user
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  format: jwt
+                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4
       responses:
         '200':
           description: Access granted
@@ -400,7 +401,7 @@ components:
         token:
           type: string
           format: jwt
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4"
     Roles:
       type: array
       example: admin
