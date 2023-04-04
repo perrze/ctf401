@@ -23,7 +23,7 @@ servers:
   - url: http://localhost:5000
 tags:
   - name: challenges
-    description: Informations sur les challenges du CTF
+    description: CTF Challenges information
 paths:
   /challenges:
     get:
@@ -62,7 +62,7 @@ paths:
                 schema:
                   $ref: '#/components/schemas/Challenge'
         '405':
-            description: Invalid input
+            description: Invalid ID
   /challenges/{id}:
     get:
       tags:
@@ -112,11 +112,13 @@ paths:
               $ref: '#/components/schemas/Challenge'
       responses: 
         '200':
-            description: User modified
+            description: Challenge modified
             content:
               application/json:
                 schema:
                   $ref: '#/components/schemas/Challenge'
+        '404':
+            description: ID not found
         '405':
             description: Invalid input
     delete:
@@ -136,19 +138,101 @@ paths:
           description: Challenge ID
       responses:
         '200': 
-          description: User deleted
-        '400':
-          description: Invalid ID
+          description: Challenge deleted
         '404':
           description: ID Not Found
-  /challenges/{status}:
+  /challenges/{id}/check_flag:
     get:
       tags:
         - challenges
-      summary: Return CTF challenges by status
-      description: Retourne CTF challenges by status
+      summary: Check CTF challenge response 
+      description: Check CTF challenge response 
+      operationId: checkChallengeReponse
+      parameters:
+        - in: query
+          name: flag
+          required: true
+          schema:
+            type: string
+            example: 'IUTSM'
+          description: Flag found
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: ID not found
+        '405':
+          description: Invalid input
+  /challenges/{id}/status:
+    get:
+      tags:
+        - challenges
+      summary: Check CTF challenge status 
+      description: Check CTF challenge status 
+      operationId: checkChallengeStatus
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Challenge ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        '404':
+          description: ID not found
+  /challenges/games/{id_game}:
+    get:
+      tags:
+        - challenges
+      summary: Return all CTF challenges for one game
+      description: Return all CTF challenges for one game
+      operationId: getChallengesByGame
+      parameters:
+        - in: path
+          name: id_game
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a682b3d6-50cd-4f26-91fd-2eb66c249303'
+          description: Challenge status
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challenges'
+        '404':
+          description: ID game not found
+  /challenges/games/{id_game}/{status}:
+    get:
+      tags:
+        - challenges
+      summary: Return CTF challenges by status for one game
+      description: Return CTF challenges by status for one game
       operationId: getChallengesByStatus
       parameters:
+        - in: path
+          name: id_game
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a682b3d6-50cd-4f26-91fd-2eb66c249303'
+          description: Game ID
         - in: path
           name: status
           required: true
@@ -166,26 +250,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Challenges'
-  /challenges/{level}:
+        '404':
+          description: Not found
+  /challenges/games/{id_game}/tags:
     get:
       tags:
         - challenges
-      summary: Return CTF challenges by level
-      description: Retourne CTF challenges by level
-      operationId: getChallengesByTag
+      summary: Return CTF challenges game by tag
+      description: Return CTF challenges game by tag
+      operationId: getChallengesByGameAndTag
       parameters:
         - in: path
-          name: level
+          name: id_game
           required: true
           schema:
             type: string
-            enum:
-              - easy
-              - medium
-              - hard
-              - super-hard
+            format: uuid
+            example: 'a682b3d6-50cd-4f26-91fd-2eb66c249303'
+          description: Game ID
+        - in: query
+          name: tag
+          required: true
+          schema:
+            type: string
             example: 'easy'
-          description: Challenge level
+          description: Challenge tag
       responses:
         '200':
           description: Successful operation
@@ -195,6 +284,21 @@ paths:
                 $ref: '#/components/schemas/Challenges'
 components:
   schemas:
+    Status: 
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          example: False
+    Response: 
+      type: object
+      properties:
+        response: 
+          type: string
+          example: 'IUTSM'
+        check:
+          type: boolean
+          example: True
     Challenge:
       type: object
       properties:
@@ -203,19 +307,20 @@ components:
           format: uuid
           example: 'a682b3d6-50cd-4f26-91fd-2eb66c249301'
           description: 'Challenge ID'
-        level:
+        id_game:
           type: string
-          example: 'easy'
-          description: 'Challenge level'
-        category:
+          format: uuid
+          example: 'a682b3d6-50cd-4f26-91fd-2eb66c249303'
+          description: 'Game ID'
+        tags:
           type: string
-          example: 'Réseaux, Sécurité'
-          description: 'Challenge categories'
+          example: 'easy, Réseaux, Sécurité'
+          description: 'Challenge tags'
         nb_points:
           type: integer
           example: 300
           description: 'Number of points won after solving the challenge'
-        createur:
+        creator:
           type: string
           example: 'clasheureux'
           description: 'Challenge creator'
@@ -235,6 +340,10 @@ components:
           type: boolean
           example: True
           descritpion: 'Activate or desactivate the challenge'
+        files:
+          type: string
+          example: '/user/file.txt, /user/file2.py, /user/img1.png'
+          description: 'Challenge files'
       xml:
         name: challenge
     Challenges:
