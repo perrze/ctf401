@@ -1,0 +1,279 @@
+openapi: 3.1.0
+info:
+  title: Swagger Petstore - OpenAPI 3.1
+  description: |-
+    This is the swagger for the API Teams
+
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://DevCloud.swagger.io/api/v3
+tags:
+  - name: team
+    description: exclusive API for teams in the SAE
+
+paths:
+  /team:
+    get:
+      tags:
+        - team
+      summary: Look all info for all teams
+      operationId: getinfo
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/member'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/description'
+            application/x-www-form-urlencoded:
+              schema:
+                $ref: '#/components/schemas/name'
+  /team/{id_team}:
+    get:
+      tags:
+        - team
+      summary: Look all info for this team
+      operationId: getinfoteam
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/member'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/description'
+            application/x-www-form-urlencoded:
+              schema:
+                $ref: '#/components/schemas/name'
+    delete:
+      tags:
+        - team
+      summary: Suppress a team with id
+      operationId: deleteteam
+      parameters:
+        - name: id_team
+          in: path
+          description: suppress this team
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: invalid id_team
+        '404':
+          description: not found id_team
+      security:
+        - api_key: []
+    patch:
+      tags:
+        - team
+      summary: update the team info
+      operationId: patchteam
+      parameters:
+        - name: id_team
+          in: path
+          description: update info for this team
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: modify an existant team
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/member'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/description'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/name'
+      responses:
+        default:
+          description: successful operation
+      security:
+        - api_key: []
+    put:
+      tags:
+        - team
+      summary: create a team
+      operationId: putteam
+      parameters:
+        - name: id_team
+          in: path
+          description: create a team
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: create a team
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/member'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/description'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/name'
+      responses:
+        default:
+          description: successful operation
+      security:
+        - api_key: []
+  /team/name:
+    get:
+      tags:
+        - team
+      summary: Look the name of all team
+      operationId: getnames
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/name'
+  /team/name/{id_team}:
+    get:
+      tags:
+        - team
+      summary: Look the name for one team
+      operationId: getname
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/name'
+  /team/member/{id_team}:
+    get:
+      tags:
+        - team
+      summary: Look the info member for one team (username and point)
+      operationId: getmember
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/member'
+    delete:
+      tags:
+        - team
+      summary: Suppress a member for this team
+      description: ''
+      operationId: deletemember
+      parameters:
+        - name: member (username)
+          in: path
+          description: suppress this member
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: invalid username
+        '404':
+          description: not found username
+      security:
+        - api_key: []
+  /team/description/{id_team}:
+    get:
+      tags:
+        - team
+      summary: Look the info description for this team
+      operationId: getdescription
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/description'
+  /team/{id_team}/{id_game}:
+    get:
+      tags:
+        - team
+      summary: look team belong game
+      operationId: getgame
+      responses:
+        '200':
+          description: successful operation
+
+
+###############################################################################################
+
+
+components:
+  schemas:
+    name:
+      type: string
+      example: "Apprenti"
+
+    member:
+      type: object
+      properties:
+        player1:
+          properties:
+            nom:
+              type: string
+              example: 'jean-paul'
+            point:
+              type: array
+              example: 5
+        player2:
+          properties:
+            nom:
+              type: string
+              example: 'jean-paul'
+            point:
+              type: array
+              example: 10
+        player3:
+          properties:
+            nom:
+              type: string
+              example: 'jean-paul'
+            point:
+              type: array
+              example: 15
+
+    description:
+      type: string
+      example: "Voici l'équipe Apprenti"
+
+    id_team:
+      type: string
+      example: "231ACDvfd615"
+
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://DevCloud.swagger.io/oauth/authorize
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
