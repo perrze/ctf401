@@ -35,6 +35,33 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Games'
+  
+  /games/{id_game}:
+    get:
+      tags:
+        - games
+      summary: return the game info
+      description: return the game info
+      operationId: ReturnGame
+      parameters:
+        - in: path
+          name: id_game
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
+          description: Game ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Games'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Games'
 
   /games/{id_game}/dates:
     get:
@@ -63,40 +90,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/GamesDates'
 
-  /games/{id_game}:
-    get:
-      tags:
-        - games
-      summary: return the game info
-      description: return the game info
-      operationId: ReturnGame
-      parameters:
-        - in: path
-          name: id_game
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 'a9b48bb7-9e16-4017-a04b-2f5afbfd2bc3'
-          description: Game ID
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Games'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Games'
-                
-
+  /games/modify/{id_game}:
     patch:
       tags:
         - games
       summary: Modifies the game file
       description: Modifies the game file
-      operationId: NewGame
+      operationId: ModifyGame
       parameters:
         - in: path
           name: id_game
@@ -177,7 +177,7 @@ components:
     Games:
       type: object
       properties:
-        id_jeu:
+        id_game:
           type: integer
           format: int64
           example: 4a28ce6b-312b-4bb0-a394-0cd2d03ca31a
@@ -216,7 +216,7 @@ components:
     GamesPatch:
       type: object
       properties:
-        id_jeu:
+        id_game:
           type: integer
           format: int64
           example: 4a28ce6b-312b-4bb0-a394-0cd2d03ca31a
@@ -243,7 +243,7 @@ components:
     GamesCreate:
       type: object
       properties:
-        id_jeu:
+        id_game:
           type: integer
           format: int64
           example: 8a28ce6b-312b-4bb0-a394-0cd2d03ca31b
