@@ -19,8 +19,16 @@ servers:
 tags:
   - name: team
     description: exclusive API for teams in the SAE
+  - name: players
 
 paths:
+
+###############################################################################################
+
+
+##Louis
+
+
   /team:
     get:
       tags:
@@ -33,13 +41,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/member'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/description'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/name'
+                $ref: '#/components/schemas/team'
   /team/{id_team}:
     get:
       tags:
@@ -52,13 +54,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/member'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/description'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/name'
+                $ref: '#/components/schemas/team'
     delete:
       tags:
         - team
@@ -76,8 +72,6 @@ paths:
           description: invalid id_team
         '404':
           description: not found id_team
-      security:
-        - api_key: []
     patch:
       tags:
         - team
@@ -95,18 +89,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/member'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/description'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/name'
+              $ref: '#/components/schemas/team'
       responses:
         default:
           description: successful operation
-      security:
-        - api_key: []
     put:
       tags:
         - team
@@ -124,18 +110,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/member'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/description'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/name'
+              $ref: '#/components/schemas/team'
       responses:
         default:
           description: successful operation
-      security:
-        - api_key: []
   /team/name:
     get:
       tags:
@@ -193,8 +171,6 @@ paths:
           description: invalid username
         '404':
           description: not found username
-      security:
-        - api_key: []
   /team/description/{id_team}:
     get:
       tags:
@@ -221,9 +197,243 @@ paths:
 
 ###############################################################################################
 
+###Maxence
+
+
+  /players:
+    get:
+      tags:
+        - players
+      summary: Return all players
+      description: This URL will be used to get the list of all players. It doesn't require any parameters and will return an array of 'Player' type objects.
+      operationId: listPlayers
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Players'
+  /players/create:
+    post:
+      tags:
+        - players
+      summary: Create player
+      description: This URL can create a player. It takes 3 parameters (id_user, username and id_game) and will return the created player.
+      operationId: createPlayer
+      requestBody:
+        description: player's info
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_user:
+                  type: string
+                username:
+                  type: string
+                id_game:
+                  type: string
+        required: true
+      responses:
+        '200':
+          description: Successful operation, the player have been added to the database.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+        '405':
+          description: Bad informations were given
+          
+  /players/manage/{id_player}:
+    get:
+      tags:
+        - players
+      summary: Return all infos for a specific player id
+      description: This URL will be used get all the informations a given player. It needs the ID of that player in the URL and will return a 'Player' type object.
+      operationId: PlayerById
+      parameters:
+        - name: id_player
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        '405':
+          description: Invalid input
+    delete:
+      tags:
+        - players
+      summary: Delete player
+      description: This URL is used ... well ... to delete a player. It need the ID of the player in the URL and won't return anything.
+      operationId: delPlayer
+      parameters:
+        - in: path
+          name: id_player
+          schema:
+              type: string
+          required: true
+          description: string id of player to delete
+      responses:
+          200:
+              description: player has been deleted
+    patch:
+      tags:
+        - players
+      summary: Partially Update a player
+      description: Use this URL to update some parts of the player's informations. Can be used to add him to a game (just change the 'id_game' field). It need the player's ID in the URL and the informations to patch in the request body and won't return anything (except the success string).
+      operationId: patchPlayer
+      parameters:
+        - name: id_player
+          in: path
+          description: Player's ID (the one we will update)
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: Modifie un utilisateur existant
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Player'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+    put:
+      tags:
+        - players
+      summary: Update all the player's informations
+      description: This URL will be used to update every informations of a player. It need the URL of that player in the URL and the new informations on the request body and won't return anything (except the success string)
+      operationId: updateUtilisateur
+      parameters:
+        - name: id_player
+          in: path
+          description: Player's ID (the one we will update)
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update a player
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Player'
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+  /players/challenges:
+    post:
+      tags:
+        - players
+      summary: Return all players that completed a challenge (optional)
+      description: The purpose of this URL is to retrieve every player that completed a challenge. It takes a 'Challenge' type object as a parameter of the post request and returns an array of 'Player' type objects. The result will be processed by our python script to return the correct values.
+      requestBody:
+        description: Challenge you want to see
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Challenge"
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Players"
+        '405':
+          description: Invalid input
+  /players/team/{id_player}:
+    get:
+      tags:
+        - players
+      summary: Retrieve a player's team
+      description: This URL allows us to see which team a player's on. It needs the id of the player in the URL to work.
+      operationId: playerTeam
+      parameters:
+        - name: id_player
+          in: path
+          description: Player's ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+        '405':
+          description: Bad id given
+  /players/game/{id_player}:
+    get:
+      tags:
+        - players
+      summary: Retrieve the game of a player
+      description: This URL will allow us to see if the player is playing in a game and if he is, we will see which game it is. It'll need a player ID in the URL and will return an array of 'Game' type objects.
+      operationId: gamePlayer
+      parameters:
+        - name: id_player
+          in: path
+          description: Player's ID (the one we will update)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+
+
+###############################################################################################
+
 
 components:
   schemas:
+
+
+###############################################################################################
+
+###Louis
+
+
+    team:
+      type: object
+      properties:
+        name:
+          type: string
+          $ref: '#/components/schemas/name'
+        member:
+          type: string
+          $ref: '#/components/schemas/member'
+        description:
+          type: string
+          $ref: '#/components/schemas/description'
+        id_team:
+          type: string
+          $ref: '#/components/schemas/id_team'
+        id_game:
+          $ref: "#/components/schemas/Game/properties/id_game"
+
     name:
       type: string
       example: "Apprenti"
@@ -231,49 +441,116 @@ components:
     member:
       type: object
       properties:
-        player1:
-          properties:
-            nom:
-              type: string
-              example: 'jean-paul'
-            point:
-              type: array
-              example: 5
-        player2:
-          properties:
-            nom:
-              type: string
-              example: 'jean-paul'
-            point:
-              type: array
-              example: 10
-        player3:
-          properties:
-            nom:
-              type: string
-              example: 'jean-paul'
-            point:
-              type: array
-              example: 15
+        id_player:
+          type: string
+          $ref: '#/components/schemas/Player/properties/id_player'
+        list_chall_success:
+          type: string
+          $ref: '#/components/schemas/Player/properties/list_id_chall_success'
+        username:
+          type: string
+          $ref: '#/components/schemas/Player/properties/username'
 
     description:
       type: string
-      example: "Voici l'équipe Apprenti"
+      example: 'Apprenti'
 
     id_team:
       type: string
       example: "231ACDvfd615"
 
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://DevCloud.swagger.io/oauth/authorize
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+
+###############################################################################################
+
+###Maxence
+
+
+    Players :
+      type: array
+      items:
+        $ref: "#/components/schemas/Player"
+    Player:
+      type: object
+      properties:
+        id_player:
+          type: string
+          example: 89f26c69-11ee-44c4-a135-f29f0d3df91b
+        id_user:
+          type: string
+          example: 12a56c69-11ee-44c4-a135-f29f0d3df91b
+        username:
+          type: string
+        list_id_chall_success:
+          type: array
+          items:
+            type: string
+            example: Fl@g_!
+        list_id_chall_try:
+          type: array
+          items:
+            type: string
+            example: Fl@g_!
+        id_game:
+          $ref: "#/components/schemas/Game/properties/id_game"
+    Challenge:
+      type: object
+      properties:
+        id_challenge:
+          type: string
+          example: 89f26c69-11ee-44c4-a135-f29f0d3df91b
+        chall_name:
+          type: string
+          example: this is an example
+        description:
+          type: string
+          example: this is a description on my example
+        nb_point:
+          type: integer
+          example: 450000
+        creator:
+          type: string
+          example: this is my example's creator
+        solution:
+          type: string
+          example: Fl@g_!
+    Challenges:
+      type: array
+      items:
+        $ref: "#/components/schemas/Challenge"
+    Game :
+      type: object
+      properties:
+        id_game:
+          type: string
+          example: 89f26c69-11ee-44c4-a135-f29f0d3df91b
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+          example: path to the logo
+    Team:
+      type: object
+      properties:
+        id_team:
+          type: string
+          example: 8af14c69-11ee-44c4-a135-f29f0d3df91b
+        id_game:
+          $ref: "#/components/schemas/Game/properties/id_game"
+        name:
+          type: string
+          example: example team
+        description:
+          type: string
+          example: this is an example team
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player/properties/id_player"
