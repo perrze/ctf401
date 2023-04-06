@@ -148,18 +148,35 @@ def usernameIsCorrect(username):
 the request data."""
 
 
-def requestIsCorrect(valid_key_list, rq):
-    provided_key = []
+def requestIsCorrect(valid_keys_list, rq):
+    provided_keys = []
     try:
         for key in rq:
-            if key not in valid_key_list:
+            if key not in valid_keys_list:
                 return False
-            provided_key.append(key)
-        if provided_key is valid_key_list:
+            provided_keys.append(key)
+        if provided_keys is valid_keys_list:
             return False
         return True
     except KeyError:
         return False
+
+"""This function is used for the 'patch' command. It takes the request made by the user and the list of every keys
+expected. It returns the list of keys that will be modified and True if the list isn't empty and false if it is."""
+def patchKeys(valid_keys_list, rq):
+    provided_keys = []
+    for key in rq:
+        try:
+            if (key in valid_keys_list) and (key not in provided_keys):
+                provided_keys.append(key)
+        except KeyError:
+            pass
+    if len(provided_keys) > 0:
+        return provided_keys, True
+    else:
+        return provided_keys, False
+
+
 
 
 # API
@@ -202,38 +219,60 @@ def createPlayers():
     # TODO createPlayers : creation is working to test when DB is on
 
 
-@app.route('/players/manage/<uuid>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
-def managePlayers(uuid):
-    if request.method == 'GET':
+@app.route('/players/manage/<uuid>', methods=['GET'])
+def managePlayersGet(uuid):
+    if not uuidIsCorrect(uuid):
+        return "Bad id were given !", 405
+    player = getPlayerById(uuid)
+    return jsonify(player)
+
+
+@app.route('/players/manage/<uuid>', methods=['DELETE'])
+def delPlayer(uuid):
+    if not uuidIsCorrect(uuid):
+        return "Bad id wer given !", 405
+
+    player = getPlayerById(uuid)
+    deletePlayer(player)
+    return jsonify(players)
+
+
+@app.route('/players/manage/<uuid>', methods=['PUT'])
+def putPlayer(uuid):
+    valid_keys = ["id_game", "username", "list_id_chall_success", "list_id_chall_try"]
+    try:
+        update_infos = request.get_json()
+
+        if (not requestIsCorrect(valid_keys, update_infos)) and (not uuidIsCorrect(uuid)):
+            return "Bad information were given !", 405
+
         player = getPlayerById(uuid)
-        test_uuid = uuidIsCorrect(uuid)
+        player['id_game'] = update_infos['id_game']
+        player['username'] = update_infos['username']
+        player['list_id_chall_success'] = update_infos["list_id_chall_success"]
+        player['list_id_chall_try'] = update_infos["list_id_chall_try"]
+
         return jsonify(player)
-
-    if request.method == 'DELETE':
-        player = getPlayerById(uuid)
-        test_uuid = uuidIsCorrect(uuid)
-        deletePlayer(player)
-        return jsonify(players)
-    if request.method == 'PUT':
-        valid_keys = ["id_game", "username", "list_id_chall_success", "list_id_chall_try"]
-        try:
-            update_infos = request.get_json()
-
-            if (not requestIsCorrect(valid_keys, update_infos)) and (not uuidIsCorrect(uuid)):
-                return "Bad information were given !", 405
-
-            player = getPlayerById(uuid)
-            player['id_game'] = update_infos['id_game']
-            player['username'] = update_infos['username']
-            player['list_id_chall_success'] = update_infos["list_id_chall_success"]
-            player['list_id_chall_try'] = update_infos["list_id_chall_try"]
-
-            return jsonify(player)
-        except KeyError:
-            return "Bad keys were given !", 405
+    except KeyError:
+        return "Bad keys were given !", 405
 
 
-    return 'coucou'
+@app.route('/players/manage/<uuid>', methods=['PATCH'])
+def patchPlayer(uuid):
+    print(uuid)
+    valid_keys = ['id_game', 'username', 'list_id_chall_success', 'list_id_chall_try']
+    update_infos = request.get_json()
+    player = getPlayerById(uuid)
+    if (not uuidIsCorrect(uuid)) or (not patchKeys(valid_keys, update_infos)[1]):
+        return "Bad keys were given !", 405
+    print(player)
+    for field in patchKeys(valid_keys, update_infos)[0]:
+        print(field)
+        player[field] = update_infos[field]
+    print(player)
+    return jsonify(player)
+
+    #return 'coucou'
     # TODO managePlayers
 
 
