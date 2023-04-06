@@ -81,7 +81,7 @@ def getPlayerById(id):
         if id == (player['id_player']):
             return player
     return None
-    # TODO get it working with a DB
+    # TODO getPlayerById : get it working with a DB
 
 
 def getPlayerByChallId(chall_id):
@@ -92,7 +92,7 @@ def getPlayerByChallId(chall_id):
     if len(tab_players) == 0:
         return None
     return tab_players
-    # TODO get it working with a DB
+    # TODO getPlayerByChallId : get it working with a DB
 
 
 def getGameById(game_id):
@@ -100,21 +100,21 @@ def getGameById(game_id):
         if game_id == game["id_game"]:
             return game
     return None
-    # TODO get it working with a DB
+    # TODO getGameById get it working with a DB
 
 
 # DB modification :
 def addPlayer(verifiedPlayer):
     players.append(verifiedPlayer)
     return True
-    # TODO get it working with a DB
+    # TODO addPlayer : get it working with a DB
     # TODO return true if it's done false if not
 
 
 def deletePlayer(verifiedPlayer):
     players.remove(verifiedPlayer)
     return True
-    # TODO get it working with a DB
+    # TODO deletePlayer : get it working with a DB
     # TODO return true if it's done false if not
 
 
@@ -136,7 +136,7 @@ def uuidIsCorrect(uuid):
 
 
 def usernameIsCorrect(username):
-    regex_username = re.compile(r"^[\w\d\-]{3,32}$")
+    regex_username = re.compile(r"^[\w\-]{3,32}$")
     if type(username) is not str:
         return False
     elif not regex_username.match(username):
@@ -171,7 +171,7 @@ def hello_world():  # put application's code here
 @app.route('/players', methods=['GET'])
 def getPlayers():
     return jsonify(players)
-    # TODO getPlayers, get data from DB select * from players should do
+    # TODO getPlayers : get data from DB select * from players should do
 
 
 @app.route('/players/create', methods=['POST'])
@@ -199,7 +199,7 @@ def createPlayers():
     addPlayer(createdPlayer)
 
     return createdPlayer, 200
-    # TODO creation is working to test when DB is on
+    # TODO createPlayers : creation is working to test when DB is on
 
 
 @app.route('/players/manage/<uuid>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
@@ -214,23 +214,25 @@ def managePlayers(uuid):
         test_uuid = uuidIsCorrect(uuid)
         deletePlayer(player)
         return jsonify(players)
-    print('coucou')
     if request.method == 'PUT':
-        print('coucou2')
+        valid_keys = ["id_game", "username", "list_id_chall_success", "list_id_chall_try"]
         try:
             update_infos = request.get_json()
-            print(update_infos)
+
+            if (not requestIsCorrect(valid_keys, update_infos)) and (not uuidIsCorrect(uuid)):
+                return "Bad information were given !", 405
+
+            player = getPlayerById(uuid)
+            player['id_game'] = update_infos['id_game']
+            player['username'] = update_infos['username']
+            player['list_id_chall_success'] = update_infos["list_id_chall_success"]
+            player['list_id_chall_try'] = update_infos["list_id_chall_try"]
+
+            return jsonify(player)
         except KeyError:
-            pass
-        player = getPlayerById(uuid)
-        test_uuid = uuidIsCorrect(uuid)
-        update_infos = request.get_json()
-        print(update_infos)
-        player['id_game'] = update_infos['id_game']
-        player['username'] = update_infos['username']
-        player['list_id_chall_success'] = update_infos['success']
-        player['list_id_chall_try'] = update_infos['try']
-        return jsonify(player)
+            return "Bad keys were given !", 405
+
+
     return 'coucou'
     # TODO managePlayers
 
@@ -250,13 +252,13 @@ def getPlayersByChallenge():
         return "No successful challenges found", 404
     return tab_players, 200
 
-    # TODO function is working with python variable. To test with a DB
+    # TODO getPlayersByChallenges :  function is working with python variable. To test with a DB
 
 
 @app.route('/players/team/<id>', methods=['GET'])
 def getTeamByPlayer(id):
     return team1
-    # TODO getTeamByPlayer we have to wait for teams api to define object that are usable
+    # TODO getTeamByPlayer : we have to wait for teams api to define object that is usable
 
 
 @app.route('/players/game/<id>', methods=['GET'])
@@ -271,7 +273,7 @@ def getGameByPlayer(id):
     if game is None:
         return "No game found", 404
     return game, 200
-    # TODO it's working, to test when DB is ready
+    # TODO getGameByPlayer : it's working, to test when DB is ready
 
 
 if __name__ == '__main__':
