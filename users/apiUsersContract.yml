@@ -358,13 +358,13 @@ paths:
                   hasAccess:
                     type: boolean
                     example: False
-  /users/jwt/id_user:
+  /users/check/id_user:
     post:
       tags:
         - users
       summary: Return userid from a given jwt token
       description: Return a userid if jwt is ok
-      operationId: getUserid
+      operationId: checkUserid
       requestBody:
         description: JWT Token
         content:
@@ -378,7 +378,7 @@ paths:
                   example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4
       responses:
         '200':
-          description: Correct userid
+          description: Userid extracted from jwt
           content:
             application/json:
               schema:
@@ -390,6 +390,8 @@ paths:
 
         '401':
           description: Unauthorized access
+      security:
+          - jwt: []
     
 
 components:
