@@ -15,6 +15,7 @@ externalDocs:
 servers:
   - url: https://ctf401.bb0.fr
   - url: http://10.0.0.5:5001
+  - url: http://10.0.0.5:5000
 tags:
   - name: users
     description: Operations about users
@@ -357,6 +358,38 @@ paths:
                   hasAccess:
                     type: boolean
                     example: False
+  /users/jwt/id_user:
+    post:
+      tags:
+        - users
+      summary: Return userid from a given jwt token
+      description: Return a userid if jwt is ok
+      operationId: getUserid
+      requestBody:
+        description: JWT Token
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  format: jwt
+                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4
+      responses:
+        '200':
+          description: Correct userid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id_user:
+                    type: string
+                    example: b94f1662-04f7-4150-9d99-afa21bc8ec0e
+
+        '401':
+          description: Unauthorized access
     
 
 components:
