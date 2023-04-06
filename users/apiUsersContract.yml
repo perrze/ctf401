@@ -1,0 +1,443 @@
+openapi: 3.1.0
+info:
+  title: ctf401 - API USERS
+  description: |-
+    This API allow to manage users database for ctf401 project. It allows users to connect (jwt) and disconnect. Admins to delete or add users
+  contact:
+    email: contact@perrze.fr
+  license:
+    name: GPLv3
+    url: https://www.gnu.org/licenses/gpl-3.0.en.html
+  version: 1.0.0
+externalDocs:
+  description: Find out more about ctf401
+  url: https://github.com/perrze/ctf401
+servers:
+  - url: https://ctf401.bb0.fr
+  - url: http://10.0.0.5:5001
+tags:
+  - name: users
+    description: Operations about users
+paths:
+  /users:
+    get:
+      tags:
+        - users
+      summary: List all users
+      description: ''
+      operationId: listUsers
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+        '400':
+          description: Invalid username/password supplied
+      security:
+        - jwt: []
+  /users/create:
+    post:
+      tags:
+        - users
+      summary: Create user
+      description: Can only be used by an admin
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: 'admin@ctf401.fr'
+                password:
+                  type: string
+                  format: password
+                  example: 'Bonjour1@'
+                roles:
+                  type: array
+                  items: 
+                    $ref : '#/components/schemas/Roles'
+                description:
+                  type: string
+                  example: 'I am John Doe'
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: 'admin@ctf401.fr'
+                password:
+                  type: string
+                  format: password
+                  example: 'Bonjour1@'
+                roles:
+                  type: array
+                  items: 
+                    $ref : '#/components/schemas/Roles'
+                description:
+                  type: string
+                  example: 'I am John Doe'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad JSON
+        '409':
+          description: Conflict (Email exists or data is not well formed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatGood'
+      security:
+        - jwt: []
+  /users/login:
+    get:
+      tags:
+        - users
+      summary: Logs user into the system
+      description: ''
+      operationId: loginUser
+      parameters:
+        - name: email
+          in: query
+          description: The email for login
+          required: false
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: false
+          schema:
+            type: string
+            format: password
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Jwt'
+        '401':
+          description: Invalid username/password supplied
+  /users/logout:
+    get:
+      tags:
+        - users
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+  /users/{userid}:
+    get:
+      tags:
+        - users 
+      summary: Get user by user id
+      description: ''
+      operationId: getUserById
+      parameters:
+        - name: userid
+          in: path
+          description: 'The Id to be fetched '
+          required: true
+          schema:
+            type: string
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid id_user supplied
+        '404':
+          description: User not found
+      security:
+        - jwt: []
+    put:
+      tags:
+        - users
+      summary: Update user
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      parameters:
+        - name: userid
+          in: path
+          description: id that need to be updated
+          required: true
+          schema:
+            type: string
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
+      requestBody:
+        description: Update an existent user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid id_user supplied
+        '404':
+          description: User not found
+        '409':
+          description: Conflict (Email exists or data is not well formed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatGood'
+      security:
+        - jwt: []
+    patch:
+      tags:
+        - users
+      summary: Update user
+      description: This can only be done by the logged in user.
+      operationId: updatePatchUser
+      parameters:
+        - name: userid
+          in: path
+          description: id to be updated
+          required: true
+          schema:
+            type: string
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
+      requestBody:
+        description: Update an existent user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid id_user supplied
+        '404':
+          description: User not found
+        '409':
+          description: Conflict (Email exists or data is not well formed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatGood'
+      security:
+        - jwt: []
+    delete:
+
+      tags:
+        - users
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      parameters:
+        - name: userid
+          in: path
+          description: id to be deleted
+          required: true
+          schema:
+            type: string
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid id_user supplied
+        '404':
+          description: User not found
+      security:
+          - jwt: []
+  /users/{userid}/roles:
+    get:
+      tags:
+        - users
+      summary: Get roles by user id
+      description: ''
+      operationId: getUserRoleById
+      parameters:
+        - name: userid
+          in: path
+          description: 'The Id to be fetched '
+          required: true
+          schema:
+            type: string
+            example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
+      
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  roles:
+                    example: ["admin","player"]
+        '400':
+          description: Invalid id_user supplied
+        '404':
+          description: User not found
+  /users/check/{access}:
+    post:
+      tags:
+        - users
+      summary: Check user (from JWT) is a role and can access
+      description: Check if the JWT given in the post has access to content linked to the role in url or to the id_user in access (Deleting own account for example)
+      operationId: checkUser
+      parameters:
+        - name: access
+          in: path
+          description: 'The access to be checked'
+          required: true
+          schema:
+            type: string
+            example: 'admin' 
+      requestBody:
+        description: Update an existent user
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  format: jwt
+                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4
+      responses:
+        '200':
+          description: Access granted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hasAccess:
+                    type: boolean
+                    example: True
+
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hasAccess:
+                    type: boolean
+                    example: False
+    
+
+components:
+  schemas:
+    Users:
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        id_user:
+          type: string
+          format: uuid
+          example: 'b94f1662-04f7-4150-9d99-afa21bc8ec0e'
+        email:
+          type: string
+          format: email
+          example: 'admin@ctf401.fr'
+        password:
+          type: string
+          format: password
+          example: '4c5ad97ad717574cbb7e73da27f72ba9'
+        roles:
+          type: array
+          items: 
+            $ref : '#/components/schemas/Roles'
+        description:
+          type: string
+          example: 'I am John Doe'
+    WhatGood:
+      type: object
+      properties:
+        id_user:
+          type: boolean
+          example: True
+        email:
+          type: boolean
+          example: False
+        password:
+          type: boolean
+          example: True
+        roles:
+          type: boolean
+          example: True
+        description:
+          type: boolean
+          example: True
+    Jwt:
+      type: object
+      properties:
+        token:
+          type: string
+          format: jwt
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4"
+    Roles:
+      type: array
+      example: admin
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+      xml:
+        name: '##default'
+  requestBodies:
+    UserArray:
+      description: List of user object
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/User'
+  securitySchemes:
+    jwt:
+      type: apiKey 
+      name: jwt
+      in: header
