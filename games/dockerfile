@@ -3,4 +3,6 @@ EXPOSE 5000
 WORKDIR /app
 COPY . /app
 RUN pip install flask jsonify request
-CMD ["flask", "--app", "test", "run", "--host=0.0.0.0"]
+RUN python -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+CMD ["flask", "--app", "games", "run", "--host=0.0.0.0"]
