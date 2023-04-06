@@ -645,7 +645,9 @@ def checkUser(access):
             return jsonify({"hasAccess": False}), 401
     except Exception as e:
         return "Invalid Authentication token!", 401
-    
+
+@app.route("/users/id_user")
+
 @app.route("/users/temp/testAccess")
 def testAccess():
     if not(check_connected_to_auth()): # Check if well connected and validity of creds
