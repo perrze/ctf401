@@ -11,6 +11,7 @@ import requests
 import sqlite3
 import json
 from urllib.parse import quote_plus
+
 # ---------------------------------------------------------------------------- #
 #                                 Static Datas                                 #
 # ---------------------------------------------------------------------------- #
@@ -236,6 +237,7 @@ def connect_services_to_auth():
         password=creds["password"]
     
     result = requests.get(BASE_URL+"/users/login?email="+quote_plus(email)+"&password="+quote_plus(password))
+
     if result.status_code==200:
         jsonLoaded=json.loads(result.content)
         receivedToken=jsonLoaded["token"]
@@ -248,8 +250,9 @@ def check_connected_to_auth():
     global receivedToken
     global expireAt
     if receivedToken=="" or expireAt<=time():
-        temp = connect_services_to_auth()
-        return temp
+
+        connect_services_to_auth()
+        return True
     else:
         return True
 
@@ -418,6 +421,7 @@ if "CREDS_LOCATION" in environ:
     CREDS_LOCATION = getenv("CREDS_LOCATION")
 else:
     CREDS_LOCATION = "users/creds.json"
+
 logging.debug("SECRET_KEY = "+SECRET_KEY)
 app.config['SECRET_KEY'] = SECRET_KEY
 

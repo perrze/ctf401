@@ -21,6 +21,11 @@ tags:
     description: exclusive API for teams in the SAE
 
 paths:
+
+
+###############################################################################################
+
+
   /team:
     get:
       tags:
@@ -33,13 +38,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/member'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/description'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/name'
+                $ref: '#/components/schemas/Teams'
   /team/{id_team}:
     get:
       tags:
@@ -52,13 +51,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/member'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/description'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/name'
+                $ref: '#/components/schemas/Teams'
     delete:
       tags:
         - team
@@ -76,8 +69,6 @@ paths:
           description: invalid id_team
         '404':
           description: not found id_team
-      security:
-        - api_key: []
     patch:
       tags:
         - team
@@ -95,18 +86,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/member'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/description'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/name'
+              $ref: '#/components/schemas/Teams'
       responses:
         default:
           description: successful operation
-      security:
-        - api_key: []
     put:
       tags:
         - team
@@ -124,18 +107,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/member'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/description'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/name'
+              $ref: '#/components/schemas/Teams'
       responses:
         default:
           description: successful operation
-      security:
-        - api_key: []
   /team/name:
     get:
       tags:
@@ -148,7 +123,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/name'
+                $ref: '#/components/schemas/Name'
   /team/name/{id_team}:
     get:
       tags:
@@ -161,7 +136,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/name'
+                $ref: '#/components/schemas/Name'
   /team/member/{id_team}:
     get:
       tags:
@@ -174,7 +149,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/member'
+                $ref: '#/components/schemas/Member'
     delete:
       tags:
         - team
@@ -193,8 +168,6 @@ paths:
           description: invalid username
         '404':
           description: not found username
-      security:
-        - api_key: []
   /team/description/{id_team}:
     get:
       tags:
@@ -207,7 +180,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/description'
+                $ref: '#/components/schemas/Description'
   /team/{id_team}/{id_game}:
     get:
       tags:
@@ -224,56 +197,49 @@ paths:
 
 components:
   schemas:
-    name:
-      type: string
-      example: "Apprenti"
-
-    member:
+    Teams:
       type: object
       properties:
-        player1:
-          properties:
-            nom:
-              type: string
-              example: 'jean-paul'
-            point:
-              type: array
-              example: 5
-        player2:
-          properties:
-            nom:
-              type: string
-              example: 'jean-paul'
-            point:
-              type: array
-              example: 10
-        player3:
-          properties:
-            nom:
-              type: string
-              example: 'jean-paul'
-            point:
-              type: array
-              example: 15
+        name:
+          type: object
+          $ref: '#/components/schemas/Name/properties/name'
+        member:
+          type: array
+          $ref: '#/components/schemas/Member/properties/list_id'
+        description:
+          type: object
+          $ref: '#/components/schemas/Description/properties/description'
+        id_team:
+          type: object
+          $ref: '#/components/schemas/Id_team/properties/id_team'
+        id_game:
+          type: object
+          example: "ergs5fd2636"
 
-    description:
-      type: string
-      example: "Voici l'équipe Apprenti"
+    Name:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Apprenti"
 
-    id_team:
-      type: string
-      example: "231ACDvfd615"
+    Member:
+      type: object
+      properties:
+        list_id:
+          type: array
+          items:
+            example: "d0ff8434-c04b-4b3a-aa5e-4b22d2a26e5a"
 
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://DevCloud.swagger.io/oauth/authorize
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+    Description:
+      type: object
+      properties:
+        description:
+          type: string
+          example: "team apprenti"
+
+    Id_team:
+      type: object
+      properties:
+        id_team:
+          type: string
