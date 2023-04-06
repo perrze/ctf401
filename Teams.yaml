@@ -22,10 +22,8 @@ tags:
 
 paths:
 
+
 ###############################################################################################
-
-
-##Louis
 
 
   /team:
@@ -199,54 +197,49 @@ paths:
 
 components:
   schemas:
-
-
-###############################################################################################
-
-###Louis
-
-
     Teams:
       type: object
       properties:
         name:
-          type: string
-          $ref: '#/components/schemas/Name'
-        member:
           type: object
-          $ref: '#/components/schemas/Member'
+          $ref: '#/components/schemas/Name/properties/name'
+        member:
+          type: array
+          $ref: '#/components/schemas/Member/properties/list_id'
         description:
-          type: string
-          $ref: '#/components/schemas/Description'
+          type: object
+          $ref: '#/components/schemas/Description/properties/description'
         id_team:
-          type: string
-          $ref: '#/components/schemas/Id_team'
+          type: object
+          $ref: '#/components/schemas/Id_team/properties/id_team'
         id_game:
-          type: string
+          type: object
           example: "ergs5fd2636"
 
     Name:
-      type: string
-      example: "Apprenti"
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Apprenti"
 
     Member:
       type: object
       properties:
-        id_player:
-          type: string
-          example: "qgfds2fg1f"
-        list_chall_success:
+        list_id:
           type: array
-          items: 
-            example: "ip"
-        username:
-          type: string
-          example: "jean-jack"
+          items:
+            example: "d0ff8434-c04b-4b3a-aa5e-4b22d2a26e5a"
 
     Description:
-      type: string
-      example: 'Apprenti'
+      type: object
+      properties:
+        description:
+          type: string
+          example: "team apprenti"
 
     Id_team:
-      type: string
-      example: "231ACDvfd615"
+      type: object
+      properties:
+        id_team:
+          type: string
