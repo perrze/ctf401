@@ -615,23 +615,16 @@ def getUserRoleById(userid):
 @app.route('/users/check/<access>', methods=["POST"])
 def checkUser(access):
     token = request.get_json()["token"]
-
     logging.debug("Token Received: "+token)
-    print(token)
-    # with open("./test","w") as f:
-    #   f.write(token)
     try:
         data = jwt.decode(
             token, app.config["SECRET_KEY"], algorithms="HS256")
-        # data = jwt.decode(token, 'this is a secret', algorithms="HS256")
         expire = data["expire"]
         current_time = time()
         if current_time > expire:
-            # remove_jwt_db(tokenid)
             return "Token Expired", 401
 
         userid = data["id_user"]
-        # tokenid=data["id_token"]
         logging.debug("Data: "+str(data))
         if userid is None:
             return "Invalid Authentication token!", 401
@@ -646,7 +639,27 @@ def checkUser(access):
     except Exception as e:
         return "Invalid Authentication token!", 401
 
-@app.route("/users/id_user")
+@app.route("/users/check/id_user",methods=["POST"])
+def checkUserid():
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
+    token = request.get_json()["token"]
+    logging.debug("Token Received: "+token)
+    try:
+        data = jwt.decode(
+            token, app.config["SECRET_KEY"], algorithms="HS256")
+        expire = data["expire"]
+        current_time = time()
+        if current_time > expire:
+            return "Token Expired", 401
+
+        userid = data["id_user"]
+        logging.debug("Data: "+str(data))
+        if userid is None:
+            return "Invalid Authentication token!", 401
+        return jsonify({"id_user":userid}),200
+    except Exception as e:
+        return "Invalid Authentication token!", 401
 
 @app.route("/users/temp/testAccess")
 def testAccess():
