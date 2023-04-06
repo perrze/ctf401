@@ -202,19 +202,35 @@ def createPlayers():
     # TODO creation is working to test when DB is on
 
 
-@app.route('/players/manage/<id>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
-def managePlayers(id):
+@app.route('/players/manage/<uuid>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
+def managePlayers(uuid):
     if request.method == 'GET':
-        player = getPlayerById(id)
+        player = getPlayerById(uuid)
+        test_uuid = uuidIsCorrect(uuid)
         return jsonify(player)
 
     if request.method == 'DELETE':
-        player = getPlayerById(id)
+        player = getPlayerById(uuid)
+        test_uuid = uuidIsCorrect(uuid)
         deletePlayer(player)
         return jsonify(players)
-
+    print('coucou')
     if request.method == 'PUT':
-        player = getPlayerById(id)
+        print('coucou2')
+        try:
+            update_infos = request.get_json()
+            print(update_infos)
+        except KeyError:
+            pass
+        player = getPlayerById(uuid)
+        test_uuid = uuidIsCorrect(uuid)
+        update_infos = request.get_json()
+        print(update_infos)
+        player['id_game'] = update_infos['id_game']
+        player['username'] = update_infos['username']
+        player['list_id_chall_success'] = update_infos['success']
+        player['list_id_chall_try'] = update_infos['try']
+        return jsonify(player)
     return 'coucou'
     # TODO managePlayers
 
