@@ -10,6 +10,8 @@ from time import time
 import requests
 import sqlite3
 import json
+from urllib.parse import quote_plus
+
 # ---------------------------------------------------------------------------- #
 #                                 Static Datas                                 #
 # ---------------------------------------------------------------------------- #
@@ -229,11 +231,13 @@ expireAt=0.0
 def connect_services_to_auth():
     global receivedToken
     global expireAt
-    with open("creds.json") as f:
+    with open(CREDS_LOCATION) as f:
         creds=json.load(f)
         email=creds["email"]
         password=creds["password"]
-    result = requests.get(BASE_URL+"/users/login?email="+email+"&password="+password)
+    
+    result = requests.get(BASE_URL+"/users/login?email="+quote_plus(email)+"&password="+quote_plus(password))
+
     if result.status_code==200:
         jsonLoaded=json.loads(result.content)
         receivedToken=jsonLoaded["token"]
@@ -246,6 +250,7 @@ def check_connected_to_auth():
     global receivedToken
     global expireAt
     if receivedToken=="" or expireAt<=time():
+
         connect_services_to_auth()
         return True
     else:
@@ -412,6 +417,11 @@ if "BASE_URL" in environ:
     BASE_URL = getenv("BASE_URL")
 else:
     BASE_URL = "http://10.0.0.5:5000"
+if "CREDS_LOCATION" in environ:
+    CREDS_LOCATION = getenv("CREDS_LOCATION")
+else:
+    CREDS_LOCATION = "users/creds.json"
+
 logging.debug("SECRET_KEY = "+SECRET_KEY)
 app.config['SECRET_KEY'] = SECRET_KEY
 
@@ -471,6 +481,8 @@ def createUser():
 @app.route('/users/login')
 def loginUser():
     email = request.args.get('email')
+    # print("Email: "+email)
+    email=email.replace(" ","+")
     password = request.args.get('password')
     hashed = hash_password(password)
     if userid := check_connection(email, hashed):
@@ -633,7 +645,16 @@ def checkUser(access):
             return jsonify({"hasAccess": False}), 401
     except Exception as e:
         return "Invalid Authentication token!", 401
-
+    
+@app.route("/users/temp/testAccess")
+def testAccess():
+    if not(check_connected_to_auth()): # Check if well connected and validity of creds
+        return "Services unauthorized",401
+    else:
+        global receivedToken
+        # API call that need to be auth
+        callToAPI=requests.get(BASE_URL+"/users",headers={"jwt": receivedToken}).content
+        return callToAPI,200
 
 # ---------------------------------------------------------------------------- #
 #                                   Oprations                                  #
