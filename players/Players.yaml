@@ -241,12 +241,12 @@ components:
           type: array
           items:
             type: string
-            example: Fl@g_!
+            example: 7fed7d0c-16ad-4893-8827-30cb586d96ad
         list_id_chall_try:
           type: array
           items:
             type: string
-            example: Fl@g_!
+            example: 7fed7d0c-16ad-4893-8827-30cb586d96ad
         id_game:
           $ref: "#/components/schemas/Game/properties/id_game"
     Challenge:
