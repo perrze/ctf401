@@ -70,7 +70,7 @@ def update_game(id_game):
 @app.route('/games/create', methods=['POST'])
 def createGames():
     data = request.get_json()
-	id_game = uuid.uuid4()
+    id_game = uuid.uuid4()
 	date_start = data['date_start']
 	date_end = data['date_end']
 	name_game = data['name_game']
