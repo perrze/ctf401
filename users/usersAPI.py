@@ -8,6 +8,9 @@ import jwt
 from os import getenv, environ
 from time import time
 import requests
+import sqlite3
+import json
+from urllib.parse import quote_plus
 # ---------------------------------------------------------------------------- #
 #                                 Static Datas                                 #
 # ---------------------------------------------------------------------------- #
@@ -80,6 +83,60 @@ usersDB = [
             "player",
             "admin"
         ]
+    },
+    {
+        "description": "Services users",
+        "email": "services+users@ctf401.fr",
+        "id_user": "0969eb87-27a6-4021-b170-729cb532a6c9",
+        "password": "4c5ad97ad717574cbb7e73da27f72ba9",
+        "roles": [
+            "admin"
+        ]
+    },
+    {
+        "description": "Services teams",
+        "email": "services+teams@ctf401.fr",
+        "id_user": "8212cbcd-6554-43f4-a18a-3fc3eb25bd07",
+        "password": "4c5ad97ad717574cbb7e73da27f72ba9",
+        "roles": [
+            "admin"
+        ]
+    },
+    {
+        "description": "Services challenges",
+        "email": "services+challenges@ctf401.fr",
+        "id_user": "c88049e2-88f4-41a2-b85d-9ca41d53bb4e",
+        "password": "4c5ad97ad717574cbb7e73da27f72ba9",
+        "roles": [
+            "admin"
+        ]
+    },
+    {
+        "description": "Services players",
+        "email": "services+players@ctf401.fr",
+        "id_user": "4d84a07f-f064-4385-9778-427a01394c4a",
+        "password": "4c5ad97ad717574cbb7e73da27f72ba9",
+        "roles": [
+            "admin"
+        ]
+    },
+    {
+        "description": "Services games",
+        "email": "services+games@ctf401.fr",
+        "id_user": "f686a569-ef6a-4c1a-9c37-99d38bd19483",
+        "password": "4c5ad97ad717574cbb7e73da27f72ba9",
+        "roles": [
+            "admin"
+        ]
+    },
+    {
+        "description": "Services website",
+        "email": "services+website@ctf401.fr",
+        "id_user": "04a92767-9786-4921-a238-766101e5cdf1",
+        "password": "4c5ad97ad717574cbb7e73da27f72ba9",
+        "roles": [
+            "admin"
+        ]
     }
 ]
 
@@ -88,6 +145,7 @@ jwtDB = {
 }
 
 variables = True
+typeSQL = "sqlite3"
 
 # ---------------------------------------------------------------------------- #
 #                                   Functions                                  #
@@ -145,26 +203,85 @@ def hash_password(password):
 
 
 def encode_jwt(userid, SECRET_KEY):
-    expire = time()+86400  # Now + 40h
-    tokenid = str(uuid4())
-    token = jwt.encode({"id_user": userid, "id_token": tokenid,
+    expire = time()+86400  # Now + 24h
+    # tokenid = str(uuid4())
+    token = jwt.encode({"id_user": userid, 
                        "expire": expire}, SECRET_KEY, algorithm="HS256")
-    return token
+    return token,expire
 
 
 def check_if_user_access(request, role):
-  token = None
-  if "jwt" in request.headers:
-      token = request.headers["jwt"]
-  if not token:
-      return False
-  result = requests.post(BASE_URL+"/users/check/"+role, json={"token": token})
-  if result.status_code == 200:
-    return True
-  else:
-    return False
+    token = None
+    if "jwt" in request.headers:
+        token = request.headers["jwt"]
+    if not token:
+        return False
+    result = requests.post(BASE_URL+"/users/check/" +
+                           role, json={"token": token})
+    if result.status_code == 200:
+        return True
+    else:
+        return False
+    
+global receivedToken
+receivedToken=""
+global expireAt
+expireAt=0.0
+def connect_services_to_auth():
+    global receivedToken
+    global expireAt
+    with open(CREDS_LOCATION) as f:
+        creds=json.load(f)
+        email=creds["email"]
+        password=creds["password"]
+    
+    result = requests.get(BASE_URL+"/users/login?email="+quote_plus(email)+"&password="+quote_plus(password))
+    if result.status_code==200:
+        jsonLoaded=json.loads(result.content)
+        receivedToken=jsonLoaded["token"]
+        expireAt=jsonLoaded["expire"]
+        return True
+    else:
+        return False
+    
+def check_connected_to_auth():
+    global receivedToken
+    global expireAt
+    if receivedToken=="" or expireAt<=time():
+        temp = connect_services_to_auth()
+        return temp
+    else:
+        return True
 
 # ----------------------------------- Model ---------------------------------- #
+
+
+def update_SQL_table(command):
+    if typeSQL == "sqlite3":
+        try:
+            con = sqlite3.connect("./users.db")
+            cur = con.cursor()
+            cur.execute(command)
+            con.commit()
+            con.close()
+            return True
+        except Exception as e:
+            logging.debug(str(e))
+            return False
+    return False
+
+
+def get_SQL_result(command):
+    if typeSQL == "sqlite3":
+        try:
+            con = sqlite3.connect("./users.db")
+            cur = con.cursor()
+            res = cur.execute(command)
+            con.close()
+            return res.fetchall()
+        except Exception as e:
+            logging.debug(str(e))
+            return False
 
 
 def check_email_not_exist(email):
@@ -178,7 +295,11 @@ def check_email_not_exist(email):
         return True
     # Database
     else:
-        print()
+        res = get_SQL_result("SELECT email FROM users")
+        for emails in res:
+            if email in emails:
+                return False
+        return True
 
 
 def get_users_list():
@@ -290,9 +411,13 @@ if "SECRET_KEY" in environ:
 else:
     SECRET_KEY = 'this is a secret'
 if "BASE_URL" in environ:
-  BASE_URL = getenv("BASE_URL")
+    BASE_URL = getenv("BASE_URL")
 else:
-  BASE_URL = "http://10.0.0.5:5000"
+    BASE_URL = "http://10.0.0.5:5000"
+if "CREDS_LOCATION" in environ:
+    CREDS_LOCATION = getenv("CREDS_LOCATION")
+else:
+    CREDS_LOCATION = "users/creds.json"
 logging.debug("SECRET_KEY = "+SECRET_KEY)
 app.config['SECRET_KEY'] = SECRET_KEY
 
@@ -309,15 +434,15 @@ def default():
 
 @app.route('/users')
 def listUsers():
-  if not (check_if_user_access(request, "admin")):
-      return "Unauthorized", 401
-  return jsonify(get_users_list()), 200
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
+    return jsonify(get_users_list()), 200
 
 
 @app.route('/users/create', methods=['POST'])
 def createUser():
-    if not(check_if_user_access(request,"admin")):
-      return "Unauthorized", 401
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
     try:
         data = request.get_json()
     except:
@@ -352,11 +477,13 @@ def createUser():
 @app.route('/users/login')
 def loginUser():
     email = request.args.get('email')
+    # print("Email: "+email)
+    email=email.replace(" ","+")
     password = request.args.get('password')
     hashed = hash_password(password)
     if userid := check_connection(email, hashed):
-        token = encode_jwt(userid, app.config["SECRET_KEY"])
-        return ({"token": token}), 200
+        token,expire = encode_jwt(userid, app.config["SECRET_KEY"])
+        return ({"token": token,"expire":expire}), 200
     else:
         return "Invalid username/password supplied", 401
     # return jsonify(jwt), 200
@@ -370,7 +497,7 @@ def logoutUser():
 
 @app.route('/users/<userid>', methods=['GET'])
 def getUserById(userid):
-    if not(check_if_user_access(request,"admin") and not(check_if_user_access(request,userid))):
+    if not (check_if_user_access(request, "admin") and not (check_if_user_access(request, userid))):
         return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
@@ -383,7 +510,7 @@ def getUserById(userid):
 
 @app.route('/users/<userid>', methods=['PUT'])
 def updateUser(userid):
-    if not(check_if_user_access(request,"admin") and not(check_if_user_access(request,userid))):
+    if not (check_if_user_access(request, "admin") and not (check_if_user_access(request, userid))):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -417,7 +544,7 @@ def updateUser(userid):
 
 @app.route('/users/<userid>', methods=['PATCH'])
 def updatePatchUser(userid):
-    if not(check_if_user_access(request,"admin") and not(check_if_user_access(request,userid))):
+    if not (check_if_user_access(request, "admin") and not (check_if_user_access(request, userid))):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -483,38 +610,47 @@ def getUserRoleById(userid):
 
 @app.route('/users/check/<access>', methods=["POST"])
 def checkUser(access):
-    token=request.get_json()["token"]
-   
+    token = request.get_json()["token"]
+
     logging.debug("Token Received: "+token)
     print(token)
     # with open("./test","w") as f:
     #   f.write(token)
     try:
-      data = jwt.decode(
-          token, app.config["SECRET_KEY"], algorithms="HS256")
-      # data = jwt.decode(token, 'this is a secret', algorithms="HS256")
-      expire = data["expire"]
-      current_time = time()
-      if current_time > expire:
-          # remove_jwt_db(tokenid)
-          return "Token Expired", 401
+        data = jwt.decode(
+            token, app.config["SECRET_KEY"], algorithms="HS256")
+        # data = jwt.decode(token, 'this is a secret', algorithms="HS256")
+        expire = data["expire"]
+        current_time = time()
+        if current_time > expire:
+            # remove_jwt_db(tokenid)
+            return "Token Expired", 401
 
-      userid = data["id_user"]
-      # tokenid=data["id_token"]
-      logging.debug("Data: "+str(data))
-      if userid is None:
-          return "Invalid Authentication token!", 401
-      if check_uuid_is_well_formed(access):
-          if access == userid:
-              return jsonify({"hasAccess": True}), 200
-          return jsonify({"hasAccess": False}), 401
-      if check_user_has_role(userid, access):
-          return jsonify({"hasAccess": True}), 200
-      else:
-          return jsonify({"hasAccess": False}), 401
+        userid = data["id_user"]
+        # tokenid=data["id_token"]
+        logging.debug("Data: "+str(data))
+        if userid is None:
+            return "Invalid Authentication token!", 401
+        if check_uuid_is_well_formed(access):
+            if access == userid:
+                return jsonify({"hasAccess": True}), 200
+            return jsonify({"hasAccess": False}), 401
+        if check_user_has_role(userid, access):
+            return jsonify({"hasAccess": True}), 200
+        else:
+            return jsonify({"hasAccess": False}), 401
     except Exception as e:
         return "Invalid Authentication token!", 401
-
+    
+@app.route("/users/temp/testAccess")
+def testAccess():
+    if not(check_connected_to_auth()): # Check if well connected and validity of creds
+        return "Services unauthorized",401
+    else:
+        global receivedToken
+        # API call that need to be auth
+        callToAPI=requests.get(BASE_URL+"/users",headers={"jwt": receivedToken}).content
+        return callToAPI,200
 
 # ---------------------------------------------------------------------------- #
 #                                   Oprations                                  #
