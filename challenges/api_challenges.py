@@ -1,36 +1,9 @@
 from flask import Flask, request, jsonify
 import uuid
 import re
+import sqlite3
 
 app = Flask(__name__)
-
-CHALLENGES = [
-	{"id_challenge": "a682b3d6-50cd-4f26-91fd-2eb66c249301",
-	"id_game": "a682b3d6-50cd-4f26-91fd-2eb66c249310",
-	"tags": "easy, Réseaux, Sécurité",
-	"nb_points": 300, "creator": "clasheureux",
-	"name": "Analyser des paquets",
-	"description": "Analyser des paquets pour trouver le flag !",
-	"flag": "IUTSM", "status": True},
-	{"id_challenge": "a682b3d6-50cd-4f26-91fd-2eb66c249302",
-	"id_game": "a682b3d6-50cd-4f26-91fd-2eb66c249310",
-	"tags": "hard, Systèmes",
-	"nb_points": 500,
-	"createur": "clasheureux2",
-	"name": "Analyser des fichiers",
-	"description": "Analyser des fichiers pour trouver le flag !",
-	"flag": "IUTSM",
-	"status": False},
-	{"id_challenge": "a682b3d6-50cd-4f26-91fd-2eb66c249302",
-	"id_game": "a682b3d6-50cd-4f26-91fd-2eb66c249311",
-	"tags": "hard, Systèmes",
-	"nb_points": 500,
-	"createur": "clasheureux2",
-	"name": "Décrypter un fichier",
-	"description": "Décrypter le fichier pour trouver le flag !",
-	"flag": "IUTSM",
-	"files": "/user/file1.png",
-	"status": False}]
 
 regex_int = r"^[1-9][0-9]+$"
 regex_status = r"^(([Ff]alse)|([Tt]rue))$"
@@ -44,14 +17,22 @@ def index():
 @app.route("/challenges", methods=['GET'])
 def getChallenges():
 	if request.method == 'GET':
-		return jsonify(CHALLENGES)
+		co_local_db = sqlite3.connect('db_challenges.db')
+		c = co_local_db.cursor()
+		c.execute('SELECT * FROM challenges')
+		challenges = c.fetchall()
+		#parcourir les résultats de la requête et créer un dictionnaire pour chaque ligne de la table
+		column_names = [description[0] for description in c.description]
+		result = [dict(zip(column_names, row)) for row in challenges]
+		co_local_db.close()
+		return jsonify(result)
 
 @app.route("/challenges", methods=['POST'])
 def createChallenge():
 	if request.method == 'POST':
 		response = request.get_json()
-		id_chal = uuid.uuid4()
-		id_game = response['id_game']
+		id_chal = str(uuid.uuid4())
+		nom = response['id_game']
 		tags = response['tags']
 		nb_points = response['nb_points']
 		creator = response['creator']
@@ -59,9 +40,16 @@ def createChallenge():
 		description = response['description']
 		flag = response['flag']
 		status = response['status']
-		if ((re.match(regex_status, str(status))) and (re.match(regex_int, str(nb_points))) and (re.match(regex_list, str(tags))) and (re.match(regex_uuid, str(id_game))) and creator.strip() and name.strip() and description.strip() and flag.strip()) :
-			challenge = {"id_challenge": id_chal, "id_game": id_game, "tags": tags, "nb_points": nb_points, "creator": creator, "name": name, "description": description, "flag": flag, "status": status}
-			CHALLENGES.append(challenge)
+		if ((re.match(regex_status, str(status))) and (re.match(regex_int, str(nb_points))) and (re.match(regex_list, str(tags))) and nom.strip() and creator.strip() and name.strip() and description.strip() and flag.strip()) :
+			#co_game_db = sqlite3.connect('/path/to/game.db')
+			#c_game = co_game_db.cursor()
+			#id_game = c_game.execute('SELECT id_game FROM game WHERE name=?', (nom,))
+			#co_game_db.close()
+			co_local_db = sqlite3.connect('db_challenges.db')
+			c = co_local_db.cursor()
+			c.execute('INSERT INTO challenges (id_challenge, id_game, tags, nb_points, creator, name, description, flag, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', (id_chal, nom, tags, nb_points, creator, name, description, flag, status))
+			co_local_db.commit()
+			co_local_db.close()
 			return jsonify({'200':"Challenge created"})
 		else :
 			return jsonify({'404':"Challenge could not be created"})
@@ -69,47 +57,63 @@ def createChallenge():
 @app.route("/challenges/<id>", methods=['GET'])
 def getChallengeByID(id):
 	id_chal = id
-	for challenge in CHALLENGES :
-		if (challenge['id_challenge'] == id_chal) :
-				return jsonify(challenge)
+	co_local_db = sqlite3.connect('db_challenges.db')
+	c = co_local_db.cursor()
+	c.execute('SELECT * FROM challenges WHERE id_challenge=?', (id_chal,))
+	challenge = c.fetchone()
+	co_local_db.close()
+	if challenge :
+		column_names = [description[0] for description in c.description]
+		result = [dict(zip(column_names, challenge))]
+		return jsonify(result)
 	return jsonify({'404':"ID not found"})
 
 @app.route("/challenges/<id>", methods=['PATCH'])
 def modifyChallengeByID(id):
 	id_chal = id
 	errors = []
-	for challenge in CHALLENGES :
-		if (challenge['id_challenge'] == id_chal) :
-			response = request.get_json()
-			for key, value in response.items():
-				if key != 'id_challenge' :
-					if key in challenge:
-						if (key=='nb_points'):
-							if (re.match(str(regex_int), str(value))):
-								challenge[key] = value
-							else:
-								errors.append(f"Invalid value for {key}")
-						elif (key=='status'):
-							if (re.match(regex_status, str(value))):
-								challenge[key] = value
-							else:
-								errors.append(f"Invalid value for {key}")
-						elif (key=='tags'):
-							if (re.match(regex_list, str(value))):
-								challenge[key] = value
-							else:
-								errors.append(f"Invalid value for {key}")
-						elif (key=='id_game'):
-							if (re.match(regex_uuid, str(value))):
-								challenge[key] = value
-							else:
-								errors.append(f"Invalid value for {key}")
+	co_local_db = sqlite3.connect('db_challenges.db')
+	c = co_local_db.cursor()
+	c.execute('SELECT * FROM challenges WHERE id_challenge=?', (id_chal,))
+	challenge = c.fetchone()
+	if challenge :
+		column_names = [description[0] for description in c.description]
+		response = request.get_json()
+		for key, value in response.items():
+			if key != 'id_challenge' :
+				if key in column_names:
+					if key=='nb_points':
+						if (re.match(regex_int), str(value)):
+							c.execute('UPDATE challenges SET nb_points = ? WHERE id_challenge=?', (value, id_chal))
+							co_local_db.commit()
 						else:
-							challenge[key] = value
-					else :
-						return jsonify({'405':"Invalid input"})
-				else:
-					return jsonify({'404':"Impossible to change Challenge ID"})
+							errors.append(f"Invalid value for {key}")
+					elif key=='status':
+						if (re.match(regex_status, str(value))):
+							c.execute('UPDATE challenges SET status = ? WHERE id_challenge=?', (value, id_chal))
+							co_local_db.commit()
+						else:
+							errors.append(f"Invalid value for {key}")
+					elif (key=='tags'):
+						if (re.match(regex_list, str(value))):
+							c.execute('UPDATE challenges SET tags = ? WHERE id_challenge=?', (value, id_chal))
+							co_local_db.commit()
+						else:
+							errors.append(f"Invalid value for {key}")
+					elif (key=='id_game'):
+						if (re.match(regex_uuid, str(value))):
+							c.execute('UPDATE challenges SET id_game = ? WHERE id_challenge=?', (value, id_chal))
+						else:
+							errors.append(f"Invalid value for {key}")
+					else:
+						if value.strip():
+							c.execute(f'UPDATE challenges SET {key} = ? WHERE id_challenge=?', (value, id_chal))
+						else:
+							errors.append(f"Empty value for {key}")
+				else :
+					errors.append(f"Invalid key : {key}")
+			else :
+				return jsonify({'404':"Impossible to change Challenge ID"})
 		if errors :
 			return jsonify({'405':"Invalid input", 'errors': errors})
 		else :
@@ -118,11 +122,17 @@ def modifyChallengeByID(id):
 @app.route("/challenges/<id>", methods=['DELETE'])
 def deleteChallengeByID(id):
 	id_chal = id
-	for challenge in CHALLENGES :
-		if (challenge['id_challenge'] == id_chal) :
-			CHALLENGES.remove(challenge)
-			return jsonify({'200':"Challenge deleted"})
-	return jsonify({'404':"ID not found"})
+	co_local_db = sqlite3.connect('db_challenges.db')
+	c = co_local_db.cursor()
+	c.execute('SELECT * FROM challenges WHERE id_challenge=?', (id_chal,))
+	challenge = c.fetchone()
+	if challenge :
+		c.execute('DELETE FROM challenges WHERE id_challenge=?', (id_chal,))
+		co_local_db.commit()
+		co_local_db.close()
+		return jsonify({'200':"Challenge deleted"})
+	else :
+		return jsonify({'404':"ID not found"})
 
 @app.route("/challenges/<id>/check_flag", methods=['GET'])
 def checkChallengeResponse(id):
@@ -132,10 +142,10 @@ def checkChallengeResponse(id):
 			flag = request.args.get('flag')
 			if (flag=="") :
 				return jsonify({'405':'Invalid input'})
-			if (challenge['flag']==flag):
-				return jsonify({'response': flag, 'check': True})
-			else :
-				return jsonify({'response': flag, 'check': False})
+		if (challenge['flag']==flag):
+			return jsonify({'response': flag, 'check': True})
+		else :
+			return jsonify({'response': flag, 'check': False})
 	return jsonify({'404':"ID not found"})
 
 @app.route("/challenges/<id>/status", methods=['GET'])
