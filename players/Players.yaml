@@ -25,18 +25,42 @@ paths:
       description: This URL will be used to get the list of all players. It doesn't require any parameters and will return an array of 'Player' type objects.
       operationId: listPlayers
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Players'
+        404:
+          description: No player found
+  /players/jwt:
+    get:
+      tags:
+        - players
+      summary: Get a player with a jwt token
+      description: This URL will return a player if the jwt token is valid. It takes a jwt token in query.
+      operationId: getPlayerByJWT
+      parameters:
+        - name: token_jwt
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        405:
+          description: Invalid token
   /players/create:
     post:
       tags:
         - players
       summary: Create player
-      description: This URL can create a player. It takes 3 parameters (id_user, username and id_game) and will return the created player.
+      description: This URL can create a player. It takes 3 parameters (id_user, username and id_game) and will return the created player. By default, list_id_chall_succes and list_id_chall_try will be initialiased as an empty list.
       operationId: createPlayer
       requestBody:
         description: player's info
@@ -53,15 +77,15 @@ paths:
                   type: string
         required: true
       responses:
-        '200':
+        200:
           description: Successful operation, the player have been added to the database.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Player"
-        '405':
+        405:
           description: Bad informations were given
-          
+
   /players/manage/{id_player}:
     get:
       tags:
@@ -76,13 +100,13 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
-        '405':
+        405:
           description: Invalid input
     delete:
       tags:
@@ -100,11 +124,13 @@ paths:
       responses:
           200:
               description: player has been deleted
+          405:
+            description: Invalid input
     patch:
       tags:
         - players
       summary: Partially Update a player
-      description: Use this URL to update some parts of the player's informations. Can be used to add him to a game (just change the 'id_game' field). It need the player's ID in the URL and the informations to patch in the request body and won't return anything (except the success string).
+      description: Use this URL to update some parts of the player's informations. Can be used to add him to a game (just change the 'id_game' field). It need the player's ID in the URL and the informations to patch in the request body and will return the modified player object.
       operationId: patchPlayer
       parameters:
         - name: id_player
@@ -120,17 +146,19 @@ paths:
             schema:
               $ref: '#/components/schemas/Player'
       responses:
-        '200':
+        200:
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
+        405:
+          description: Bad informations were given
     put:
       tags:
         - players
       summary: Update all the player's informations
-      description: This URL will be used to update every informations of a player. It need the URL of that player in the URL and the new informations on the request body and won't return anything (except the success string)
+      description: This URL will be used to update every informations of a player. It need the URL of that player in the URL and the new informations on the request body and will return the modified player object.
       operationId: updateUtilisateur
       parameters:
         - name: id_player
@@ -147,12 +175,14 @@ paths:
               $ref: '#/components/schemas/Player'
         required: true
       responses:
-        '200':
+        200:
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
+        405:
+          description: Bad informations were given
   /players/challenges:
     post:
       tags:
@@ -167,13 +197,13 @@ paths:
               $ref: "#/components/schemas/Challenge"
         required: true
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Players"
-        '405':
+        405:
           description: Invalid input
   /players/team/{id_player}:
     get:
@@ -190,14 +220,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Team"
-        '405':
-          description: Bad id given
+        404:
+          description: Player not found
   /players/game/{id_player}:
     get:
       tags:
@@ -213,12 +243,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Game'
+        405:
+          description: Invalid input
 
 components:
   schemas:
