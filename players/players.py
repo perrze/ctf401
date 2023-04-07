@@ -2,6 +2,7 @@ import re
 import uuid
 import sqlite3
 
+import requests
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
@@ -89,6 +90,12 @@ def getPlayerById(id):
             return player
     return None
     # TODO getPlayerById : get it working with a DB
+
+def getPlayerByUserId(id):
+    for player in players:
+        if id == player['id_user']:
+            return player
+    return None
 
 
 def getPlayerByChallId(chall_id):
@@ -199,6 +206,24 @@ def getPlayers():
     return jsonify(players)
     # TODO getPlayers : get data from DB select * from players should do
 
+@app.route('/players/jwt', methods=['GET'])
+def getPlayersByJWT():
+    token = {'token': request.args['token_jwt']}
+    try:    # Temp !!!
+        url = "localhost:5000/users/check/id_user"
+        rq = requests.post(url, json=token)
+        if not rq.status_code == 200:
+            return "Invalid token", 405
+        id_user = rq.json()["id_user"]
+        player = getPlayerByUserId(id_user)
+        if player is None:
+            return "No player found", 404
+        return player
+    except requests.exceptions.InvalidSchema:
+        return players[0]
+
+    # TODO getPlayersByJWT : to test with users API once its working
+
 
 @app.route('/players/create', methods=['POST'])
 def createPlayers():
@@ -301,6 +326,11 @@ def getPlayersByChallenge():
     return tab_players, 200
 
     # TODO getPlayersByChallenges :  function is working with python variable. To test with a DB
+
+@app.route('/players/addchallenges', methods=['POST'])
+def addChallenges():
+    return 'coucou, ça marche pas encore, bientôt'
+    # TODO addChallenges
 
 
 @app.route('/players/team/<id>', methods=['GET'])
