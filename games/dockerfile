@@ -2,5 +2,6 @@ FROM python:3.9
 EXPOSE 5000
 WORKDIR /app
 COPY . /app
-RUN pip install flask jsonify request
-CMD ["flask", "--app", "test", "run", "--host=0.0.0.0"]
+RUN apt-get update && apt-get install -y sqlite3
+RUN pip install flask
+CMD ["flask", "--app", "games", "run", "--host=0.0.0.0"]
