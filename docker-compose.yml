@@ -9,6 +9,7 @@ services:
       - ./users:/opt/users
     environment:
       - BASE_URL=http://ctf401.fr
+#      - USE_VARIABLES=False
     labels:
       - "traefik.http.routers.users.rule=Host(`ctf401.fr`) && PathPrefix(`/users`)"
   # players:
