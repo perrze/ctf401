@@ -205,28 +205,29 @@ def hash_password(password):
 
 def encode_jwt(userid, SECRET_KEY):
     expire = time()+86400  # Now + 24h
-    # tokenid = str(uuid4())
     token = jwt.encode({"id_user": userid, 
                        "expire": expire}, SECRET_KEY, algorithm="HS256")
     return token,expire
 
 
 def check_if_user_access(request, role):
+    # TEMP DEACTIVATE DUE TO DEV
+    # return True
     token = None
     if "jwt" in request.headers:
         token = request.headers["jwt"]
     if not token:
-        # TEMP DEACTIVATE DUE TO DEV
-        # return False
-        return True
+        
+        return False
+        # return True
     result = requests.post(BASE_URL+"/users/check/" +
                            role, json={"token": token})
     if result.status_code == 200:
         return True
     else:
         # TEMP DEACTIVATE DUE TO DEV
-        # return False
-        return True
+        return False
+        # return True
     
 global receivedToken
 receivedToken=""
@@ -333,8 +334,8 @@ def add_user(user):
     if variables:
         usersDB.append(user)
     # Databse
-    else:
-        firstPart="INSERT INTO users ("
+    else:  
+        firstPart="INSERT INTO users (" 
         secondPart="VALUES("
         for key in user:
             firstPart+="\""+key+"\","
@@ -357,11 +358,18 @@ def get_properties_from_userid(userid):
         return False
     # Database
     else:
-        query="SELECT * FROM users WHERE 'id_user'='"+userid+"';"
+        query="SELECT * FROM users WHERE id_user='"+userid+"';"
+        # print(query)
+        result=get_SQL_result(query)
+        # print(result)
+        if result==[]:
+            return False
         keys=["description","email","id_user","password","roles"]
-        user={keys[i] : user[i] for i in range(len(user))}
+        gettedUser=result[0]
+        user={keys[i] : gettedUser[i] for i in range(len(gettedUser))}
         user["roles"]=eval(user["roles"])
         return user
+        
 
 def return_position_in_array_user(userid):
     for i in range(len(usersDB)):
@@ -376,12 +384,12 @@ def modify_user(userid, user):
         usersDB[position] = user
     # Database
     else:
-        query="UPDATE users SET"
+        query="UPDATE users SET "
         for key in user:
-            query+="\""+key+"="+str(user[key])+"\","
+            query+=key+"=\""+str(user[key])+"\","
             
-        query=query[:-1]+" WHERE 'id_user'="+userid+"';"
-        print(query)
+        query=query[:-1]+" WHERE id_user='"+userid+"';"
+        # print(query)
         update_SQL_table(query)
         
 
@@ -393,27 +401,8 @@ def delete_user(userid):
         usersDB.pop(position)
     # Database
     else:
-        query="DELETE FROM users WHERE 'id_user='"+userid+"';"
+        query="DELETE FROM users WHERE id_user = '"+userid+"';"
         update_SQL_table(query)
-
-
-def add_jwt_db(token, tokenid):
-    # Variables
-    if variables:
-        jwtDB[tokenid] = token
-    # Database
-    else:
-        print()
-
-
-def remove_jwt_db(tokenid):
-    # Variables
-    if variables:
-        jwtDB.pop(tokenid)
-    # Database
-    else:
-        print()
-
 
 def check_user_has_role(userid, role):
     # Variables
@@ -427,7 +416,15 @@ def check_user_has_role(userid, role):
         return False
     # Database
     else:
-        print()
+        query="SELECT roles FROM users WHERE id_user='"+userid+"';"
+        result=get_SQL_result(query)
+        if result==[]:
+            return False
+        roles=eval(result[0][0])
+        if role in roles:
+            return True
+        else:
+            return False
 
 
 def check_connection(email, hashed):
@@ -439,7 +436,12 @@ def check_connection(email, hashed):
         return False
     # Database
     else:
-        print()
+        query="SELECT id_user FROM users WHERE email='"+email+"' AND password='"+hashed+"';"
+        result=get_SQL_result(query)
+        if result==[]:
+            return False
+        return result[0][0]
+        
 
 
 # ---------------------------------------------------------------------------- #
@@ -538,7 +540,8 @@ def logoutUser():
 
 @app.route('/users/<userid>', methods=['GET'])
 def getUserById(userid):
-    if not (check_if_user_access(request, "admin") and not (check_if_user_access(request, userid))):
+    print()
+    if not (check_if_user_access(request, "admin")) and not (check_if_user_access(request, userid)):
         return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
@@ -551,7 +554,7 @@ def getUserById(userid):
 
 @app.route('/users/<userid>', methods=['PUT'])
 def updateUser(userid):
-    if not (check_if_user_access(request, "admin") and not (check_if_user_access(request, userid))):
+    if not (check_if_user_access(request, "admin")) and not (check_if_user_access(request, userid)):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -585,7 +588,7 @@ def updateUser(userid):
 
 @app.route('/users/<userid>', methods=['PATCH'])
 def updatePatchUser(userid):
-    if not (check_if_user_access(request, "admin") and not (check_if_user_access(request, userid))):
+    if not (check_if_user_access(request, "admin")) and not (check_if_user_access(request, userid)):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -710,7 +713,7 @@ def checkUserid():
 #         return callToAPI,200
 
 # ---------------------------------------------------------------------------- #
-#                                   Oprations                                  #
+#                                   Operations                                  #
 # ---------------------------------------------------------------------------- #
 
 
