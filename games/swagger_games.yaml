@@ -116,6 +116,8 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/GamesPatch'
+      security:
+        - jwt: []
       
   
   /games/create:
@@ -143,6 +145,8 @@ paths:
                   $ref: '#/components/schemas/GamesCreate'
         '405':
             description: Invalid input
+      security:
+        - jwt: []
 
 
   /games/{id_game}/delete:
@@ -168,6 +172,8 @@ paths:
           description: Invalid ID
         '404':
           description: ID Not Found
+      security:
+        - jwt: []
 
 
 
@@ -266,3 +272,9 @@ components:
           description: logo path
       xml:
         name: order
+  
+  securitySchemes:
+    jwt:
+      type: apiKey 
+      name: jwt
+      in: header
