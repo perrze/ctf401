@@ -145,7 +145,7 @@ jwtDB = {
 
 }
 
-variables = True
+variables = False
 typeSQL = "sqlite3"
 
 # ---------------------------------------------------------------------------- #
@@ -216,13 +216,17 @@ def check_if_user_access(request, role):
     if "jwt" in request.headers:
         token = request.headers["jwt"]
     if not token:
-        return False
+        # TEMP DEACTIVATE DUE TO DEV
+        # return False
+        return True
     result = requests.post(BASE_URL+"/users/check/" +
                            role, json={"token": token})
     if result.status_code == 200:
         return True
     else:
-        return False
+        # TEMP DEACTIVATE DUE TO DEV
+        # return False
+        return True
     
 global receivedToken
 receivedToken=""
@@ -262,13 +266,14 @@ def check_connected_to_auth():
 def update_SQL_table(command):
     if typeSQL == "sqlite3":
         try:
-            con = sqlite3.connect("./users.db")
+            con = sqlite3.connect("users/users.db")
             cur = con.cursor()
             cur.execute(command)
             con.commit()
             con.close()
             return True
         except Exception as e:
+            print(str(e))
             logging.debug(str(e))
             return False
     return False
@@ -277,12 +282,13 @@ def update_SQL_table(command):
 def get_SQL_result(command):
     if typeSQL == "sqlite3":
         try:
-            con = sqlite3.connect("./users.db")
+            con = sqlite3.connect("users/users.db")
             cur = con.cursor()
-            res = cur.execute(command)
+            res = cur.execute(command).fetchall()
             con.close()
-            return res.fetchall()
+            return res
         except Exception as e:
+            print(str(e))
             logging.debug(str(e))
             return False
 
@@ -298,7 +304,7 @@ def check_email_not_exist(email):
         return True
     # Database
     else:
-        res = get_SQL_result("SELECT email FROM users")
+        res = get_SQL_result("SELECT email FROM users;")
         for emails in res:
             if email in emails:
                 return False
@@ -310,7 +316,16 @@ def get_users_list():
     if variables:
         return usersDB
     else:
-        print()
+        res = get_SQL_result("SELECT * FROM users;")
+        keys=["description","email","id_user","password","roles"]
+        users=[]
+        for user in res:
+            userToAdd={keys[i] : user[i] for i in range(len(user))}
+            userToAdd["roles"]=eval(userToAdd["roles"])
+            users.append(userToAdd)
+        # print(users)
+        return users
+        # return res
 
 
 def add_user(user):
@@ -319,7 +334,18 @@ def add_user(user):
         usersDB.append(user)
     # Databse
     else:
-        print()
+        firstPart="INSERT INTO users ("
+        secondPart="VALUES("
+        for key in user:
+            firstPart+="\""+key+"\","
+            secondPart+="\""+str(user[key])+"\","
+            
+        firstPart=firstPart[:-1]+")\n"
+        secondPart=secondPart[:-1]+");"
+        print(firstPart+secondPart)
+        update_SQL_table(firstPart+secondPart)
+        
+        
 
 
 def get_properties_from_userid(userid):
@@ -331,8 +357,11 @@ def get_properties_from_userid(userid):
         return False
     # Database
     else:
-        print()
-
+        query="SELECT * FROM users WHERE 'id_user'='"+userid+"';"
+        keys=["description","email","id_user","password","roles"]
+        user={keys[i] : user[i] for i in range(len(user))}
+        user["roles"]=eval(user["roles"])
+        return user
 
 def return_position_in_array_user(userid):
     for i in range(len(usersDB)):
@@ -347,7 +376,14 @@ def modify_user(userid, user):
         usersDB[position] = user
     # Database
     else:
-        print()
+        query="UPDATE users SET"
+        for key in user:
+            query+="\""+key+"="+str(user[key])+"\","
+            
+        query=query[:-1]+" WHERE 'id_user'="+userid+"';"
+        print(query)
+        update_SQL_table(query)
+        
 
 
 def delete_user(userid):
@@ -357,7 +393,8 @@ def delete_user(userid):
         usersDB.pop(position)
     # Database
     else:
-        print()
+        query="DELETE FROM users WHERE 'id_user='"+userid+"';"
+        update_SQL_table(query)
 
 
 def add_jwt_db(token, tokenid):
@@ -661,15 +698,16 @@ def checkUserid():
     except Exception as e:
         return "Invalid Authentication token!", 401
 
-@app.route("/users/temp/testAccess")
-def testAccess():
-    if not(check_connected_to_auth()): # Check if well connected and validity of creds
-        return "Services unauthorized",401
-    else:
-        global receivedToken
-        # API call that need to be auth
-        callToAPI=requests.get(BASE_URL+"/users",headers={"jwt": receivedToken}).content
-        return callToAPI,200
+# Example function for services who need auth contacting each others
+# @app.route("/users/temp/testAccess")
+# def testAccess():
+#     if not(check_connected_to_auth()): # Check if well connected and validity of creds
+#         return "Services unauthorized",401
+#     else:
+#         global receivedToken
+#         # API call that need to be auth
+#         callToAPI=requests.get(BASE_URL+"/users",headers={"jwt": receivedToken}).content
+#         return callToAPI,200
 
 # ---------------------------------------------------------------------------- #
 #                                   Oprations                                  #
