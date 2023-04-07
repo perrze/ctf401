@@ -1,0 +1,245 @@
+openapi: 3.1.0
+info:
+  title: Swagger Petstore - OpenAPI 3.1
+  description: |-
+    This is the swagger for the API Teams
+
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://DevCloud.swagger.io/api/v3
+tags:
+  - name: team
+    description: exclusive API for teams in the SAE
+
+paths:
+
+
+###############################################################################################
+
+
+  /team:
+    get:
+      tags:
+        - team
+      summary: Look all info for all teams
+      operationId: getinfo
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teams'
+  /team/{id_team}:
+    get:
+      tags:
+        - team
+      summary: Look all info for this team
+      operationId: getinfoteam
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teams'
+    delete:
+      tags:
+        - team
+      summary: Suppress a team with id
+      operationId: deleteteam
+      parameters:
+        - name: id_team
+          in: path
+          description: suppress this team
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: invalid id_team
+        '404':
+          description: not found id_team
+    patch:
+      tags:
+        - team
+      summary: update the team info
+      operationId: patchteam
+      parameters:
+        - name: id_team
+          in: path
+          description: update info for this team
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: modify an existant team
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Teams'
+      responses:
+        default:
+          description: successful operation
+    put:
+      tags:
+        - team
+      summary: create a team
+      operationId: putteam
+      parameters:
+        - name: id_team
+          in: path
+          description: create a team
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: create a team
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Teams'
+      responses:
+        default:
+          description: successful operation
+  /team/name:
+    get:
+      tags:
+        - team
+      summary: Look the name of all team
+      operationId: getnames
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+  /team/name/{id_team}:
+    get:
+      tags:
+        - team
+      summary: Look the name for one team
+      operationId: getname
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+  /team/member/{id_team}:
+    get:
+      tags:
+        - team
+      summary: Look the info member for one team (username and point)
+      operationId: getmember
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+    delete:
+      tags:
+        - team
+      summary: Suppress a member for this team
+      description: ''
+      operationId: deletemember
+      parameters:
+        - name: member (username)
+          in: path
+          description: suppress this member
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: invalid username
+        '404':
+          description: not found username
+  /team/description/{id_team}:
+    get:
+      tags:
+        - team
+      summary: Look the info description for this team
+      operationId: getdescription
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+  /team/{id_team}/{id_game}:
+    get:
+      tags:
+        - team
+      summary: look team belong game
+      operationId: getgame
+      responses:
+        '200':
+          description: successful operation
+
+
+###############################################################################################
+
+
+components:
+  schemas:
+    Teams:
+      type: object
+      properties:
+        name:
+          type: object
+          $ref: '#/components/schemas/Name/properties/name'
+        member:
+          type: array
+          $ref: '#/components/schemas/Member/properties/list_id'
+        description:
+          type: object
+          $ref: '#/components/schemas/Description/properties/description'
+        id_team:
+          type: object
+          $ref: '#/components/schemas/Id_team/properties/id_team'
+        id_game:
+          type: object
+          example: "ergs5fd2636"
+
+    Name:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Apprenti"
+
+    Member:
+      type: object
+      properties:
+        list_id:
+          type: array
+          items:
+            example: "d0ff8434-c04b-4b3a-aa5e-4b22d2a26e5a"
+
+    Description:
+      type: object
+      properties:
+        description:
+          type: string
+          example: "team apprenti"
+
+    Id_team:
+      type: object
+      properties:
+        id_team:
+          type: string

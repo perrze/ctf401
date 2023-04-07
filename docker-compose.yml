@@ -1,0 +1,41 @@
+version: "1.0"
+services:
+  users:
+    #image: ctf401/users
+    build: ./users
+    ports:
+      - 5001:5000
+    volumes:
+      - ./users:/opt/users
+    environment:
+      - BASE_URL=http://ctf401.fr
+#      - USE_VARIABLES=False
+    labels:
+      - "traefik.http.routers.users.rule=Host(`ctf401.fr`) && PathPrefix(`/users`)"
+  # players:
+  #   build: ./players
+  #   ports:
+  #     - 5002:5000
+  # teams:
+  #   build: ./teams
+  #   ports:
+  #     - 5003:5000
+  # challenges:
+  #   build: ./challenges
+  #   ports:
+  #     - 5004:5000
+  # games:
+  #   build: ./games
+  #   ports:
+  #     - 5005:5000
+  reverse-proxy:
+    image: traefik:v2.9
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
