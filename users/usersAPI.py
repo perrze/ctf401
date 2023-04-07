@@ -463,7 +463,7 @@ if "DB_TYPE" in environ:
 else:
     DB_TYPE="sqlite3"
 if "USE_VARIABLES" in environ:
-    USE_VARIABLES = eval(getenv("USE_VARIABLES"))   
+    USE_VARIABLES = eval(getenv("USE_VARIABLES"))
 else:
     USE_VARIABLES = True
 
@@ -477,7 +477,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 # ------------------------------------- / ------------------------------------ #
 
 
-@app.route('/')
+@app.route('/users/alive')
 def default():
     return "Welcome to /users API from ctf401", 200
 
