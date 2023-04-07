@@ -145,8 +145,7 @@ jwtDB = {
 
 }
 
-variables = False
-typeSQL = "sqlite3"
+
 
 # ---------------------------------------------------------------------------- #
 #                                   Functions                                  #
@@ -438,10 +437,9 @@ def check_connection(email, hashed):
     else:
         query="SELECT id_user FROM users WHERE email='"+email+"' AND password='"+hashed+"';"
         result=get_SQL_result(query)
-        if result==[]:
+        if result==[] or result==False:
             return False
         return result[0][0]
-        
 
 
 # ---------------------------------------------------------------------------- #
@@ -460,6 +458,17 @@ if "CREDS_LOCATION" in environ:
     CREDS_LOCATION = getenv("CREDS_LOCATION")
 else:
     CREDS_LOCATION = "users/creds.json"
+if "DB_TYPE" in environ:
+    DB_TYPE=getenv("DB_TYPE")
+else:
+    DB_TYPE="sqlite3"
+if "USE_VARIABLES" in environ:
+    USE_VARIABLES = eval(getenv("USE_VARIABLES"))   
+else:
+    USE_VARIABLES = True
+
+variables = USE_VARIABLES
+typeSQL = DB_TYPE
 
 logging.debug("SECRET_KEY = "+SECRET_KEY)
 app.config['SECRET_KEY'] = SECRET_KEY
