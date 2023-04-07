@@ -205,6 +205,36 @@ paths:
                 $ref: "#/components/schemas/Players"
         405:
           description: Invalid input
+  /players/addchallenges:
+    post:
+      tags:
+        - players
+      summary: Add a challenge to player
+      description: This URL allow us to add a challenge into list_id_chall_try and into list_id_chall_success if the player has succeed.
+      operationId: addChallenge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_player:
+                  type: string
+                  example: 8cfc578b-6d1c-4ecf-b226-a10243e73f07
+                id_chall:
+                  type: string
+                  example: 572eefbb-c07b-40af-b156-c936b115d024
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        404:
+          description: "No player found"
+        405:
+          description: "Bad informations were given"
   /players/team/{id_player}:
     get:
       tags:
