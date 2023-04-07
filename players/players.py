@@ -1,9 +1,16 @@
 import re
 import uuid
+import sqlite3
 
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+
+conn = sqlite3.connect('players.db')
+curs = conn.cursor()
+
+curs.execute('''CREATE TABLE IF NOT EXISTS players(id_player STRING PRIMARY KEY, id_user STRING, list_id_chall_success STRING, list_id_chall_try STRING, id_game STRING, username STRING)''')
+conn.commit()
 
 player1 = {
     "id_player": '34afa4d7-2bcb-4290-9906-56ea3f0553eb',
@@ -163,6 +170,8 @@ def requestIsCorrect(valid_keys_list, rq):
 
 """This function is used for the 'patch' command. It takes the request made by the user and the list of every keys
 expected. It returns the list of keys that will be modified and True if the list isn't empty and false if it is."""
+
+
 def patchKeys(valid_keys_list, rq):
     provided_keys = []
     for key in rq:
@@ -314,6 +323,42 @@ def getGameByPlayer(id):
     return game, 200
     # TODO getGameByPlayer : it's working, to test when DB is ready
 
+
+
+#--------------------------------------------------------------------------------------------------------------#
+#                                                   SQLite3                                                    #
+#--------------------------------------------------------------------------------------------------------------#
+
+# id_player_test = str(uuid.uuid4())
+# id_game_test = str(uuid.uuid4())
+# id_user_test = str(uuid.uuid4())
+#
+# curs.execute('''INSERT INTO players VALUES (?, ?, '[]', '[]', ?, 'test')''', (id_player_test, id_user_test, id_game_test))
+# conn.commit()
+
+# curs.execute('''SELECT * FROM players''')
+# result = curs.fetchall()
+# print(result)
+
+# userToDelete = str(input("Veuillez entrer le nom de l'utilisateur a supprimer : "))
+#
+# curs.execute('''DELETE FROM players WHERE username = ?''', [userToDelete])
+# conn.commit()
+#
+field = str(input("Veuillez entrer le champ à mettre à jour : "))
+value = str(input(f"Veuillez entrer la nouvelle valeur de {field} : "))
+
+condToTest = str(input("Veuillez entrer la paramètre selon lequel va être fait la modification : "))
+expectedResult = str(input(f"Veuillez entrer la valeur attendue pour {condToTest} : "))
+
+curs.execute('''UPDATE players SET %s = ? WHERE %s = ? ''' % (field, condToTest), (value, expectedResult))       #A mettre dans une boucle for pour effectuer toutes les modifs de clés qu'on veut
+conn.commit()
+
+
+
+curs.execute('''SELECT * FROM players''')
+result = curs.fetchall()
+print(result)
 
 if __name__ == '__main__':
     app.run()
