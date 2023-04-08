@@ -13,9 +13,7 @@ externalDocs:
   description: Find out more about ctf401
   url: https://github.com/perrze/ctf401
 servers:
-  - url: https://ctf401.bb0.fr
-  - url: http://10.0.0.5:5001
-  - url: http://10.0.0.5:5000
+  - url: http://api.ctf401.bb0.fr
 tags:
   - name: users
     description: Operations about users
@@ -335,7 +333,7 @@ paths:
                 token:
                   type: string
                   format: jwt
-                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiZXhwaXJlIjoxNjgxMDcyODE4LjIwNzQxNjh9.a1bNG1IM-YrgOoDHYYCkb5kAfHXQtALzquUYSLUGj7Y
       responses:
         '200':
           description: Access granted
@@ -375,7 +373,7 @@ paths:
                 token:
                   type: string
                   format: jwt
-                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiZXhwaXJlIjoxNjgxMDcyODE4LjIwNzQxNjh9.a1bNG1IM-YrgOoDHYYCkb5kAfHXQtALzquUYSLUGj7Y
       responses:
         '200':
           description: Userid extracted from jwt
@@ -392,7 +390,25 @@ paths:
           description: Unauthorized access
       security:
           - jwt: []
-    
+  /users/check/jwt:
+    get:
+      tags:
+        - users
+      summary: Return user properties from a given jwt token
+      description: Return user properties if jwt is ok
+      operationId: checkJwt
+      responses:
+        '200':
+          description: Userid extracted from jwt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+        '401':
+          description: Unauthorized access
+      security:
+          - jwt: []
+
 
 components:
   schemas:
@@ -446,7 +462,7 @@ components:
         token:
           type: string
           format: jwt
-          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiaWRfdG9rZW4iOiI0M2M4NDUxYy04NzUxLTQ4OGYtYTk4Zi1iZTEwMDYxNWJhMzciLCJleHBpcmUiOjE2ODA3MTMwNTguMDAyNzYyNn0.pswEVbY1CJN5w7XiChwunWsB-zK_i-qDtLQaCQneRC4"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoiYjk0ZjE2NjItMDRmNy00MTUwLTlkOTktYWZhMjFiYzhlYzBlIiwiZXhwaXJlIjoxNjgxMDcyODE4LjIwNzQxNjh9.a1bNG1IM-YrgOoDHYYCkb5kAfHXQtALzquUYSLUGj7Y"
     Roles:
       type: array
       example: admin
