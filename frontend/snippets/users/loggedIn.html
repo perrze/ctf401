@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<head>
+    <script src="/js/jquery-3.6.4.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/bootstrap/bootstrap.min.js"></script>
+    <script src="/js/users.js"></script>
+    <script src="/js/js.cookie.min.js"></script>
+    <link href="/css/bootstrap/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<script>
+    $( document ).ready(function(){
+        $("#welcomeLoggedIn").html("Welcome, "+ (Cookies.get("email").split('@'))[0]);
+    });
+</script>
+<div class="row">
+    <div class="col">
+        <p id="welcomeLoggedIn"></p>
+    </div>
+    <div class="col">
+        <button type="button" class="btn btn-danger" onclick="logout()">
+            Log out
+        </button>
+    </div>
+    
+</div>
+</body>

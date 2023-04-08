@@ -8,10 +8,10 @@ services:
     volumes:
       - ./users:/opt/users
     environment:
-      - BASE_URL=http://ctf401.fr
+      - BASE_URL=http://api.ctf401.bb0.fr
 #      - USE_VARIABLES=False
     labels:
-      - "traefik.http.routers.users.rule=Host(`ctf401.fr`) && PathPrefix(`/users`)"
+      - "traefik.http.routers.users.rule=Host(`api.ctf401.bb0.fr`) && PathPrefix(`/users`)"
   # players:
   #   build: ./players
   #   ports:
@@ -28,6 +28,18 @@ services:
   #   build: ./games
   #   ports:
   #     - 5005:5000
+  frontend:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "5006:80"
+    volumes:
+      - ./frontend:/srv/
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    labels:
+      - "traefik.http.routers.frontend.rule=Host(`ctf401.bb0.fr`)"
+
+
   reverse-proxy:
     image: traefik:v2.9
     # Enables the web UI and tells Traefik to listen to docker
@@ -39,3 +51,5 @@ services:
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    # labels:
+    # - traefik.frontend.headers.customResponseHeaders=Access-Control-Allow-Origin:*
