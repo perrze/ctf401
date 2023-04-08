@@ -11,6 +11,8 @@ import requests
 import sqlite3
 import json
 from urllib.parse import quote_plus
+from flask_cors import CORS
+
 
 # ---------------------------------------------------------------------------- #
 #                                 Static Datas                                 #
@@ -209,24 +211,19 @@ def encode_jwt(userid, SECRET_KEY):
     return token,expire
 
 
-def check_if_user_access(request, role):
-    # TEMP DEACTIVATE DUE TO DEV
-    # return True
+def check_if_user_access(request, roles):
     token = None
     if "jwt" in request.headers:
         token = request.headers["jwt"]
     if not token:
-        
         return False
         # return True
-    result = requests.post(BASE_URL+"/users/check/" +
-                           role, json={"token": token})
-    if result.status_code == 200:
-        return True
-    else:
-        # TEMP DEACTIVATE DUE TO DEV
-        return False
-        # return True
+    for role in roles:
+        result = requests.post(BASE_URL+"/users/check/" +
+                            role, json={"token": token})
+        if result.status_code == 200:
+            return True
+    return False
     
 global receivedToken
 receivedToken=""
@@ -446,6 +443,7 @@ def check_connection(email, hashed):
 #                                Flask Skeleton                                #
 # ---------------------------------------------------------------------------- #
 app = Flask(__name__)
+CORS(app)
 if "SECRET_KEY" in environ:
     SECRET_KEY = getenv("SECRET_KEY")
 else:
@@ -486,14 +484,14 @@ def default():
 
 @app.route('/users')
 def listUsers():
-    if not (check_if_user_access(request, "admin")):
+    if not (check_if_user_access(request, ["admin"])):
         return "Unauthorized", 401
     return jsonify(get_users_list()), 200
 
 
 @app.route('/users/create', methods=['POST'])
 def createUser():
-    if not (check_if_user_access(request, "admin")):
+    if not (check_if_user_access(request, ["admin"])):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -550,7 +548,7 @@ def logoutUser():
 @app.route('/users/<userid>', methods=['GET'])
 def getUserById(userid):
     print()
-    if not (check_if_user_access(request, "admin")) and not (check_if_user_access(request, userid)):
+    if not (check_if_user_access(request, ["admin",userid])):
         return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
@@ -563,7 +561,7 @@ def getUserById(userid):
 
 @app.route('/users/<userid>', methods=['PUT'])
 def updateUser(userid):
-    if not (check_if_user_access(request, "admin")) and not (check_if_user_access(request, userid)):
+    if not (check_if_user_access(request, ["admin"])) and not (check_if_user_access(request, userid)):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -597,7 +595,7 @@ def updateUser(userid):
 
 @app.route('/users/<userid>', methods=['PATCH'])
 def updatePatchUser(userid):
-    if not (check_if_user_access(request, "admin")) and not (check_if_user_access(request, userid)):
+    if not (check_if_user_access(request, ["admin",userid])):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -639,6 +637,8 @@ def updatePatchUser(userid):
 
 @app.route('/users/<userid>', methods=['DELETE'])
 def deleteUser(userid):
+    if not (check_if_user_access(request, ["admin",userid])):
+        return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
     user = get_properties_from_userid(userid)
@@ -651,6 +651,8 @@ def deleteUser(userid):
 
 @app.route('/users/<userid>/roles')
 def getUserRoleById(userid):
+    if not (check_if_user_access(request, ["admin",userid])):
+        return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
     user = get_properties_from_userid(userid)
@@ -690,7 +692,7 @@ def checkUser(access):
 
 @app.route("/users/check/id_user",methods=["POST"])
 def checkUserid():
-    if not (check_if_user_access(request, "admin")):
+    if not (check_if_user_access(request, ["admin"])):
         return "Unauthorized", 401
     token = request.get_json()["token"]
     logging.debug("Token Received: "+token)
@@ -707,6 +709,32 @@ def checkUserid():
         if userid is None:
             return "Invalid Authentication token!", 401
         return jsonify({"id_user":userid}),200
+    except Exception as e:
+        return "Invalid Authentication token!", 401
+
+@app.route("/users/check/jwt")
+def checkJwt():
+    if not (check_if_user_access(request, ["admin","player"])):
+        return "Unauthorized", 401
+    token = None
+    if "jwt" in request.headers:
+        token = request.headers["jwt"]
+    if not token:
+        return "Unauthorized", 401
+    logging.debug("Token Received: "+token)
+    try:
+        data = jwt.decode(
+            token, app.config["SECRET_KEY"], algorithms="HS256")
+        expire = data["expire"]
+        current_time = time()
+        if current_time > expire:
+            return "Token Expired", 401
+
+        userid = data["id_user"]
+        logging.debug("Data: "+str(data))
+        if userid is None:
+            return "Invalid Authentication token!", 401
+        return jsonify(get_properties_from_userid(userid)),200
     except Exception as e:
         return "Invalid Authentication token!", 401
 
