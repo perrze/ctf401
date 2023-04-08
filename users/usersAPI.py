@@ -148,7 +148,6 @@ jwtDB = {
 }
 
 
-
 # ---------------------------------------------------------------------------- #
 #                                   Functions                                  #
 # ---------------------------------------------------------------------------- #
@@ -206,9 +205,9 @@ def hash_password(password):
 
 def encode_jwt(userid, SECRET_KEY):
     expire = time()+86400  # Now + 24h
-    token = jwt.encode({"id_user": userid, 
+    token = jwt.encode({"id_user": userid,
                        "expire": expire}, SECRET_KEY, algorithm="HS256")
-    return token,expire
+    return token, expire
 
 
 def check_if_user_access(request, roles):
@@ -220,37 +219,42 @@ def check_if_user_access(request, roles):
         # return True
     for role in roles:
         result = requests.post(BASE_URL+"/users/check/" +
-                            role, json={"token": token})
+                               role, json={"token": token})
         if result.status_code == 200:
             return True
     return False
-    
+
+
 global receivedToken
-receivedToken=""
+receivedToken = ""
 global expireAt
-expireAt=0.0
+expireAt = 0.0
+
+
 def connect_services_to_auth():
     global receivedToken
     global expireAt
     with open(CREDS_LOCATION) as f:
-        creds=json.load(f)
-        email=creds["email"]
-        password=creds["password"]
-    
-    result = requests.get(BASE_URL+"/users/login?email="+quote_plus(email)+"&password="+quote_plus(password))
+        creds = json.load(f)
+        email = creds["email"]
+        password = creds["password"]
 
-    if result.status_code==200:
-        jsonLoaded=json.loads(result.content)
-        receivedToken=jsonLoaded["token"]
-        expireAt=jsonLoaded["expire"]
+    result = requests.get(BASE_URL+"/users/login?email=" +
+                          quote_plus(email)+"&password="+quote_plus(password))
+
+    if result.status_code == 200:
+        jsonLoaded = json.loads(result.content)
+        receivedToken = jsonLoaded["token"]
+        expireAt = jsonLoaded["expire"]
         return True
     else:
         return False
-    
+
+
 def check_connected_to_auth():
     global receivedToken
     global expireAt
-    if receivedToken=="" or expireAt<=time():
+    if receivedToken == "" or expireAt <= time():
 
         connect_services_to_auth()
         return True
@@ -314,11 +318,11 @@ def get_users_list():
         return usersDB
     else:
         res = get_SQL_result("SELECT * FROM users;")
-        keys=["description","email","id_user","password","roles"]
-        users=[]
+        keys = ["description", "email", "id_user", "password", "roles"]
+        users = []
         for user in res:
-            userToAdd={keys[i] : user[i] for i in range(len(user))}
-            userToAdd["roles"]=eval(userToAdd["roles"])
+            userToAdd = {keys[i]: user[i] for i in range(len(user))}
+            userToAdd["roles"] = eval(userToAdd["roles"])
             users.append(userToAdd)
         # print(users)
         return users
@@ -330,19 +334,17 @@ def add_user(user):
     if variables:
         usersDB.append(user)
     # Databse
-    else:  
-        firstPart="INSERT INTO users (" 
-        secondPart="VALUES("
+    else:
+        firstPart = "INSERT INTO users ("
+        secondPart = "VALUES("
         for key in user:
-            firstPart+="\""+key+"\","
-            secondPart+="\""+str(user[key])+"\","
-            
-        firstPart=firstPart[:-1]+")\n"
-        secondPart=secondPart[:-1]+");"
+            firstPart += "\""+key+"\","
+            secondPart += "\""+str(user[key])+"\","
+
+        firstPart = firstPart[:-1]+")\n"
+        secondPart = secondPart[:-1]+");"
         print(firstPart+secondPart)
         update_SQL_table(firstPart+secondPart)
-        
-        
 
 
 def get_properties_from_userid(userid):
@@ -354,18 +356,18 @@ def get_properties_from_userid(userid):
         return False
     # Database
     else:
-        query="SELECT * FROM users WHERE id_user='"+userid+"';"
+        query = "SELECT * FROM users WHERE id_user='"+userid+"';"
         # print(query)
-        result=get_SQL_result(query)
+        result = get_SQL_result(query)
         # print(result)
-        if result==[]:
+        if result == []:
             return False
-        keys=["description","email","id_user","password","roles"]
-        gettedUser=result[0]
-        user={keys[i] : gettedUser[i] for i in range(len(gettedUser))}
-        user["roles"]=eval(user["roles"])
+        keys = ["description", "email", "id_user", "password", "roles"]
+        gettedUser = result[0]
+        user = {keys[i]: gettedUser[i] for i in range(len(gettedUser))}
+        user["roles"] = eval(user["roles"])
         return user
-        
+
 
 def return_position_in_array_user(userid):
     for i in range(len(usersDB)):
@@ -380,14 +382,13 @@ def modify_user(userid, user):
         usersDB[position] = user
     # Database
     else:
-        query="UPDATE users SET "
+        query = "UPDATE users SET "
         for key in user:
-            query+=key+"=\""+str(user[key])+"\","
-            
-        query=query[:-1]+" WHERE id_user='"+userid+"';"
+            query += key+"=\""+str(user[key])+"\","
+
+        query = query[:-1]+" WHERE id_user='"+userid+"';"
         # print(query)
         update_SQL_table(query)
-        
 
 
 def delete_user(userid):
@@ -397,8 +398,9 @@ def delete_user(userid):
         usersDB.pop(position)
     # Database
     else:
-        query="DELETE FROM users WHERE id_user = '"+userid+"';"
+        query = "DELETE FROM users WHERE id_user = '"+userid+"';"
         update_SQL_table(query)
+
 
 def check_user_has_role(userid, role):
     # Variables
@@ -412,11 +414,11 @@ def check_user_has_role(userid, role):
         return False
     # Database
     else:
-        query="SELECT roles FROM users WHERE id_user='"+userid+"';"
-        result=get_SQL_result(query)
-        if result==[]:
+        query = "SELECT roles FROM users WHERE id_user='"+userid+"';"
+        result = get_SQL_result(query)
+        if result == []:
             return False
-        roles=eval(result[0][0])
+        roles = eval(result[0][0])
         if role in roles:
             return True
         else:
@@ -432,9 +434,10 @@ def check_connection(email, hashed):
         return False
     # Database
     else:
-        query="SELECT id_user FROM users WHERE email='"+email+"' AND password='"+hashed+"';"
-        result=get_SQL_result(query)
-        if result==[] or result==False:
+        query = "SELECT id_user FROM users WHERE email='" + \
+            email+"' AND password='"+hashed+"';"
+        result = get_SQL_result(query)
+        if result == [] or result == False:
             return False
         return result[0][0]
 
@@ -457,9 +460,9 @@ if "CREDS_LOCATION" in environ:
 else:
     CREDS_LOCATION = "users/creds.json"
 if "DB_TYPE" in environ:
-    DB_TYPE=getenv("DB_TYPE")
+    DB_TYPE = getenv("DB_TYPE")
 else:
-    DB_TYPE="sqlite3"
+    DB_TYPE = "sqlite3"
 if "USE_VARIABLES" in environ:
     USE_VARIABLES = eval(getenv("USE_VARIABLES"))
 else:
@@ -528,12 +531,12 @@ def createUser():
 def loginUser():
     email = request.args.get('email')
     # print("Email: "+email)
-    email=email.replace(" ","+")
+    email = email.replace(" ", "+")
     password = request.args.get('password')
     hashed = hash_password(password)
     if userid := check_connection(email, hashed):
-        token,expire = encode_jwt(userid, app.config["SECRET_KEY"])
-        return ({"token": token,"expire":expire}), 200
+        token, expire = encode_jwt(userid, app.config["SECRET_KEY"])
+        return ({"token": token, "expire": expire}), 200
     else:
         return "Invalid username/password supplied", 401
     # return jsonify(jwt), 200
@@ -548,7 +551,7 @@ def logoutUser():
 @app.route('/users/<userid>', methods=['GET'])
 def getUserById(userid):
     print()
-    if not (check_if_user_access(request, ["admin",userid])):
+    if not (check_if_user_access(request, ["admin", userid])):
         return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
@@ -595,7 +598,7 @@ def updateUser(userid):
 
 @app.route('/users/<userid>', methods=['PATCH'])
 def updatePatchUser(userid):
-    if not (check_if_user_access(request, ["admin",userid])):
+    if not (check_if_user_access(request, ["admin", userid])):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -637,7 +640,7 @@ def updatePatchUser(userid):
 
 @app.route('/users/<userid>', methods=['DELETE'])
 def deleteUser(userid):
-    if not (check_if_user_access(request, ["admin",userid])):
+    if not (check_if_user_access(request, ["admin", userid])):
         return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
@@ -651,7 +654,7 @@ def deleteUser(userid):
 
 @app.route('/users/<userid>/roles')
 def getUserRoleById(userid):
-    if not (check_if_user_access(request, ["admin",userid])):
+    if not (check_if_user_access(request, ["admin", userid])):
         return "Unauthorized", 401
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
@@ -690,7 +693,8 @@ def checkUser(access):
     except Exception as e:
         return "Invalid Authentication token!", 401
 
-@app.route("/users/check/id_user",methods=["POST"])
+
+@app.route("/users/check/id_user", methods=["POST"])
 def checkUserid():
     if not (check_if_user_access(request, ["admin"])):
         return "Unauthorized", 401
@@ -708,13 +712,14 @@ def checkUserid():
         logging.debug("Data: "+str(data))
         if userid is None:
             return "Invalid Authentication token!", 401
-        return jsonify({"id_user":userid}),200
+        return jsonify({"id_user": userid}), 200
     except Exception as e:
         return "Invalid Authentication token!", 401
 
+
 @app.route("/users/check/jwt")
 def checkJwt():
-    if not (check_if_user_access(request, ["admin","player"])):
+    if not (check_if_user_access(request, ["admin", "player"])):
         return "Unauthorized", 401
     token = None
     if "jwt" in request.headers:
@@ -734,7 +739,7 @@ def checkJwt():
         logging.debug("Data: "+str(data))
         if userid is None:
             return "Invalid Authentication token!", 401
-        return jsonify(get_properties_from_userid(userid)),200
+        return jsonify(get_properties_from_userid(userid)), 200
     except Exception as e:
         return "Invalid Authentication token!", 401
 
