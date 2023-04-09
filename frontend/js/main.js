@@ -6,10 +6,7 @@
 let BASE_URL="http://api.ctf401.bb0.fr"
 
 $( document ).ready(function(){
-    if(Cookies.get("jwt")==undefined){
-        $("#divLoginModal").load('/snippets/users/loginModal.html');
-        $("#userManagement").load('/snippets/users/loginButton.html');
-    }else{
-        $("#userManagement").load('/snippets/users/loggedIn.html'); 
-    }
+    /* ------------------------------ Main snippets ----------------------------- */
+    $("#navbar").load('/snippets/main/navbar.html');
+    
 });
