@@ -85,10 +85,15 @@ games = [game1]
 # Get data from DB :
 
 def getPlayerById(id):
-    curs.execute('''SELECT * FROM players WHERE id_player = ?''', id)
+    idPlayer = str(id)
+    print(idPlayer)
+    curs.execute('''SELECT * FROM players WHERE id_player = ?''', [idPlayer])
     player = curs.fetchall()
     if player is not None:
             return player
+    # for player in players:
+    #     if player['id_player'] == id:
+    #         return player
     return "c cassé"
     # TODO getPlayerById : get it working with a DB
 
@@ -127,15 +132,20 @@ def addPlayer(verifiedPlayer):
     list_id_chall_try = str(verifiedPlayer['list_id_chall_try'])
     id_game = verifiedPlayer['id_game']
     username = verifiedPlayer['username']
-    curs.execute('''INSERT INTO players VALUES (:id_player, :id_user, :list_id_chall_success, :list_id_chall_try , :id_game , :username)''', (id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username))
+    curs.execute('''INSERT INTO players(id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username ) VALUES (:id_player, :id_user, :list_id_chall_success, :list_id_chall_try , :id_game , :username)''', (id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username))
     conn.commit()
     return True
     # TODO addPlayer : get it working with a DB
     # TODO return true if it's done false if not
 
 
-def deletePlayer(verifiedPlayer):
-    players.remove(verifiedPlayer)
+def deletePlayer(player):
+    print(player)
+    listPlayer = list(player[0])
+    print(listPlayer)
+    id_player = listPlayer[0]
+    curs.execute('''DELETE FROM players WHERE id_player = ?''', [id_player])
+    conn.commit()
     return True
     # TODO deletePlayer : get it working with a DB
     # TODO return true if it's done false if not
@@ -274,12 +284,12 @@ def managePlayersGet(uuid):
 
 @app.route('/players/manage/<uuid>', methods=['DELETE'])
 def delPlayer(uuid):
+    print(uuid)
     if not uuidIsCorrect(uuid):
         return "Bad id wer given !", 405
-
     player = getPlayerById(uuid)
     deletePlayer(player)
-    return jsonify(players)
+    return getPlayers()
 
 
 @app.route('/players/manage/<uuid>', methods=['PUT'])
