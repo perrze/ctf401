@@ -2,7 +2,7 @@ import re
 import uuid
 import sqlite3
 
-conn = sqlite3.connect('./players.db')
+conn = sqlite3.connect('./players.db', check_same_thread=False)
 curs = conn.cursor()
 
 import requests
@@ -120,8 +120,15 @@ def getGameById(game_id):
 
 # DB modification :
 def addPlayer(verifiedPlayer):
-    curs.execute('''INSERT INTO players VALUES (:id_player, :id_user, :list_chall_success, :list_chall_try , :id_game , :username)''', verifiedPlayer)
-    players.append(verifiedPlayer)
+    print(verifiedPlayer)
+    id_player = verifiedPlayer['id_player']
+    id_user = verifiedPlayer['id_user']
+    list_id_chall_success = str(verifiedPlayer['list_id_chall_success'])
+    list_id_chall_try = str(verifiedPlayer['list_id_chall_try'])
+    id_game = verifiedPlayer['id_game']
+    username = verifiedPlayer['username']
+    curs.execute('''INSERT INTO players VALUES (:id_player, :id_user, :list_id_chall_success, :list_id_chall_try , :id_game , :username)''', (id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username))
+    conn.commit()
     return True
     # TODO addPlayer : get it working with a DB
     # TODO return true if it's done false if not
@@ -205,7 +212,9 @@ def hello_world():  # put application's code here
 
 @app.route('/players', methods=['GET'])
 def getPlayers():
-    return jsonify(players)
+    curs.execute('''SELECT * FROM players''')
+    playersFromBdd = curs.fetchall()
+    return playersFromBdd
     # TODO getPlayers : get data from DB select * from players should do
 
 @app.route('/players/jwt', methods=['GET'])
@@ -241,7 +250,7 @@ def createPlayers():
     rq = request.get_json()
 
     if not requestIsCorrect(valid_key, rq):
-        return "Bad informations were given", 405
+        return "Bad informations were given !", 405
 
     if not uuidIsCorrect(rq['id_user']) or not uuidIsCorrect(rq['id_game']) or not usernameIsCorrect(rq['username']):
         return "Bad informations were given", 405
@@ -377,20 +386,20 @@ def getGameByPlayer(id):
 # curs.execute('''DELETE FROM players WHERE username = ?''', [userToDelete])
 # conn.commit()
 #
-field = str(input("Veuillez entrer le champ à mettre à jour : "))
-value = str(input(f"Veuillez entrer la nouvelle valeur de {field} : "))
-
-condToTest = str(input("Veuillez entrer la paramètre selon lequel va être fait la modification : "))
-expectedResult = str(input(f"Veuillez entrer la valeur attendue pour {condToTest} : "))
-
-curs.execute('''UPDATE players SET %s = ? WHERE %s = ? ''' % (field, condToTest), (value, expectedResult))       #A mettre dans une boucle for pour effectuer toutes les modifs de clés qu'on veut
-conn.commit()
-
-
-
-curs.execute('''SELECT * FROM players''')
-result = curs.fetchall()
-print(result)
+# field = str(input("Veuillez entrer le champ à mettre à jour : "))
+# value = str(input(f"Veuillez entrer la nouvelle valeur de {field} : "))
+#
+# condToTest = str(input("Veuillez entrer la paramètre selon lequel va être fait la modification : "))
+# expectedResult = str(input(f"Veuillez entrer la valeur attendue pour {condToTest} : "))
+#
+# curs.execute('''UPDATE players SET %s = ? WHERE %s = ? ''' % (field, condToTest), (value, expectedResult))       #A mettre dans une boucle for pour effectuer toutes les modifs de clés qu'on veut
+# conn.commit()
+#
+#
+#
+# curs.execute('''SELECT * FROM players''')
+# result = curs.fetchall()
+# print(result)
 
 if __name__ == '__main__':
     app.run()
