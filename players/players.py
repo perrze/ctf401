@@ -302,12 +302,13 @@ def putPlayer(uuid):
             return "Bad information were given !", 405
 
         player = getPlayerById(uuid)
-        player['id_game'] = update_infos['id_game']
-        player['username'] = update_infos['username']
-        player['list_id_chall_success'] = update_infos["list_id_chall_success"]
-        player['list_id_chall_try'] = update_infos["list_id_chall_try"]
-
-        return jsonify(player)
+        print(player)
+        id_game = update_infos['id_game']
+        username = update_infos['username']
+        list_id_chall_success = str(update_infos["list_id_chall_success"])
+        list_id_chall_try = str(update_infos["list_id_chall_try"])
+        curs.execute('''UPDATE players SET id_game = ? , username = ? , list_id_chall_success = ? , list_id_chall_try = ? WHERE id_player = ? ''', (id_game, username, list_id_chall_success, list_id_chall_try, uuid))
+        return getPlayerById(uuid)
     except KeyError:
         return "Bad keys were given !", 405
 
