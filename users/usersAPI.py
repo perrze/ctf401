@@ -6,6 +6,7 @@ import logging
 import hashlib
 import jwt
 from os import getenv, environ
+import sys
 from time import time
 import requests
 import sqlite3
@@ -154,6 +155,7 @@ jwtDB = {
 
 
 def check_user_is_well_formed(user, verifyPassword=True):
+    print(user)
     notBad = True
     whatGood = {"id_user": True, "email": True,
                 "password": True, "roles": True, "description": True}
@@ -163,7 +165,7 @@ def check_user_is_well_formed(user, verifyPassword=True):
         r"^(?P<identifiant>[\w\-\.\+]+)@(?P<operateur>[\w\-\.]+\.(?P<TLD>[a-z]+))$")
     descriptionRegex = re.compile(r"^[\w \-àâçéèêëîïôûùüÿñæœ.]*$")
     passwordRegex = re.compile(
-        r"^(?=[^a-z]*[a-z])(?=[^A-Z]*[A-Z])(?=\D*\d)(?=[^!\^#%@?°€$£*-]*[!\^#%&@?°€$£*-])[A-Za-z0-9!\^#%@?°€$£*-]{8,128}$")
+        r"^(?=[^a-z]*[a-z])(?=[^A-Z]*[A-Z])(?=\D*\d)(?=[^!\^#%@?°€$£*-]*[!\^#%@?°€$£*-])[A-Za-z0-9!\^#%@?°€$£*-]{8,128}$")
     rolesList = ["admin", "player"]
     if not (uuidRegex.match(user["id_user"])):
         logging.debug(' UUID regex False')
@@ -574,6 +576,7 @@ def updateUser(userid):
     if len(data) != 5:
         return 'Bad JSON', 400
     for key in data:
+        data[key]=str(data[key]) # To prevent problems in treatement
         if not (key in keyAllowed):
             return 'Bad JSON', 400
     if not (check_uuid_is_well_formed(userid)):
@@ -602,15 +605,16 @@ def updatePatchUser(userid):
         return "Unauthorized", 401
     try:
         data = request.get_json()
+        # print(data, file=sys.stderr)    
     except:
         return 'Bad JSON', 400
     keyAllowed = ["id_user", "email", "password", "roles", "description"]
     if len(data) > 5:
         return 'Bad JSON', 400
     for key in data:
+        data[key]=str(data[key]) # To prevent problems in treatement
         if not (key in keyAllowed):
             return 'Bad JSON', 400
-
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
     user = get_properties_from_userid(userid)
@@ -760,5 +764,5 @@ def checkJwt():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    app.run(host="0.0.0.0")
+    # logging.basicConfig(level=logging.DEBUG)
+    app.run(host="0.0.0.0",debug="run")

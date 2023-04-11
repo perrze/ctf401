@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<head>
+  <title>ctf401 - Profile</title>
+  <!-- ------------------------------ JS import ------------------------------ -->
+  <script src="/js/jquery-3.6.4.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/bootstrap/popper.min.js"></script>
+  <script src="/js/bootstrap/bootstrap.min.js"></script>
+  <script src="/js/js.cookie.min.js"></script>
+  <script src="/js/users.js"></script>
+  <!-- ----------------------------- CSS import ------------------------------ -->
+  <link href="/css/bootstrap/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <script>
+    $(document).ready(function(){
+      if (Cookies.get("jwt")== undefined){
+        window.location.href = FRONT_URL;
+      }
+    });
+
+    function testConfirm(){
+      let password = $("#password").val();
+      // console.log("Passsword: "+password)
+      let confirmPassword = $("#confirmPassword").val();
+      // console.log("Confirm"+confirmPassword)
+      if (password!=confirmPassword){
+        $('#passwordInfo').html('Passwords are differents');
+        $('#passwordInfo').removeAttr('hidden');
+      }else{
+        $('#passwordInfo').hide();
+      }
+    }
+
+    function changePassword() {
+      let password = $("#password").val();
+      $.ajax({
+        url: BASE_URL + '/users/'+Cookies.get("userid"),
+        type: 'patch',
+        headers: { jwt: Cookies.get("jwt") },
+        data: JSON.stringify({password:password}),
+        contentType: 'application/json; charset=utf-8',
+        dataType: "json",
+        statusCode: {
+          200: function (response) {
+            // console.log("200")
+            console.log(response);
+          },
+          401: function (xhr) {
+            console.log("401");
+            console.log(xhr.responseText);
+          },
+          409: function(xhr) {
+            $('#passwordInfo').html('Bad password, must contain: 8 chars (A special: #%@?°€$£*-, High and Low case)');
+            $('#passwordInfo').removeAttr('hidden');
+          }
+
+
+        }
+      });
+    }
+
+    function changeEmail() {
+      let password = $("#password").val();
+      $.ajax({
+        url: BASE_URL + '/users/'+Cookies.get("userid"),
+        type: 'patch',
+        headers: { jwt: Cookies.get("jwt") },
+        data: JSON.stringify({password:password}),
+        contentType: 'application/json; charset=utf-8',
+        dataType: "json",
+        statusCode: {
+          200: function (response) {
+            // console.log("200")
+            console.log(response);
+          },
+          401: function (xhr) {
+            console.log("401");
+            console.log(xhr.responseText);
+
+          }
+
+        }
+      });
+    }
+
+  </script>
+  <div id="navbar">
+  </div>
+  <main class="my-3">
+    <div class="container">
+      <h1 class="text-center ">My profile</h1>
+      <hr class="border border-info-subtle border-2 opacity-100">
+    </div>
+    <div id="passwordProfile" class="container">
+      <h3>Change your password</h3>
+      <div class="row mt-3 gy-2 gx-3 align-items-center" id="formPassword">
+        <div class="col-auto">
+          <label class="visually-hidden" for="password">Password</label>
+          <input type="password" class="form-control" id="password" onchange="testConfirm()" placeholder="Password">
+        </div>
+        <div class="col-auto">
+          <label class="visually-hidden" for="confirmPassword">Confirm Pasword</label>
+          <input type="password" class="form-control" id="confirmPassword" onchange="testConfirm()" placeholder="Confirm Password">
+        </div>
+        <div class="col-auto">
+          <button type="button" onclick="changePassword()" class="btn btn-primary" >Submit</button>
+        </div>
+      </div>
+      <p id="passwordInfo" class="text-danger mb-3" hidden></p>
+
+      <h3>Change your email</h3>
+      <form class="row my-3 gy-2 gx-3 align-items-center">
+        <div class="col-auto">
+          <label class="visually-hidden" for="email">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="user@example.com">
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+
+      <h3>Change your description</h3>
+      <form class="row my-3 gy-2 gx-3 align-items-center">
+        <div class="col-6">
+          <textarea id="description" class="form-control"></textarea>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </main>
+  <footer>
+
+  </footer>
+</body>

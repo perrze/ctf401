@@ -13,7 +13,7 @@
 <body> -->
 <script>
     $( document ).ready(function(){
-        $("#welcomeLoggedIn").html("Welcome, "+ (Cookies.get("email").split('@'))[0]);
+        $("#welcomeLoggedIn").html("Welcome, <a class='text-decoration-none' href='/profile.html'>"+ (Cookies.get("email").split('@'))[0]+"</a>");
         
     });
 </script>
