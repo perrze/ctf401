@@ -308,6 +308,7 @@ def putPlayer(uuid):
         list_id_chall_success = str(update_infos["list_id_chall_success"])
         list_id_chall_try = str(update_infos["list_id_chall_try"])
         curs.execute('''UPDATE players SET id_game = ? , username = ? , list_id_chall_success = ? , list_id_chall_try = ? WHERE id_player = ? ''', (id_game, username, list_id_chall_success, list_id_chall_try, uuid))
+        conn.commit()
         return getPlayerById(uuid)
     except KeyError:
         return "Bad keys were given !", 405
@@ -319,14 +320,16 @@ def patchPlayer(uuid):
     valid_keys = ['id_game', 'username', 'list_id_chall_success', 'list_id_chall_try']
     update_infos = request.get_json()
     player = getPlayerById(uuid)
+    id_player = str(uuid)
     if (not uuidIsCorrect(uuid)) or (not patchKeys(valid_keys, update_infos)[1]):
         return "Bad keys were given !", 405
     print(player)
     for field in patchKeys(valid_keys, update_infos)[0]:
         print(field)
-        player[field] = update_infos[field]
+        newValue = str(update_infos[field])
+        curs.execute('''UPDATE players SET %s = ? WHERE id_player = ? ''' % field, (newValue, id_player))
     print(player)
-    return jsonify(player)
+    return getPlayerById(uuid)
 
     #return 'coucou'
     # TODO managePlayers
