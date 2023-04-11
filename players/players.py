@@ -2,13 +2,13 @@ import re
 import uuid
 import sqlite3
 
+conn = sqlite3.connect('./players.db')
+curs = conn.cursor()
+
 import requests
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
-
-conn = sqlite3.connect('players.db')
-curs = conn.cursor()
 
 curs.execute('''CREATE TABLE IF NOT EXISTS players(id_player STRING PRIMARY KEY, id_user STRING, list_id_chall_success STRING, list_id_chall_try STRING, id_game STRING, username STRING)''')
 conn.commit()
@@ -85,10 +85,11 @@ games = [game1]
 # Get data from DB :
 
 def getPlayerById(id):
-    for player in players:
-        if id == (player['id_player']):
+    curs.execute('''SELECT * FROM players WHERE id_player = ?''', id)
+    player = curs.fetchall()
+    if player is not None:
             return player
-    return None
+    return "c cassé"
     # TODO getPlayerById : get it working with a DB
 
 def getPlayerByUserId(id):
@@ -119,6 +120,7 @@ def getGameById(game_id):
 
 # DB modification :
 def addPlayer(verifiedPlayer):
+    curs.execute('''INSERT INTO players VALUES (:id_player, :id_user, :list_chall_success, :list_chall_try , :id_game , :username)''', verifiedPlayer)
     players.append(verifiedPlayer)
     return True
     # TODO addPlayer : get it working with a DB
