@@ -17,10 +17,10 @@ player1 = {
     "id_player": '34afa4d7-2bcb-4290-9906-56ea3f0553eb',
     "id_user": 'f97c4650-4795-4232-9a62-85eb97be71aa',
     "list_id_chall_success": [
-        "Fl@g_!"
+        "c554794d-f590-4d9e-8b46-9d83fb4ebab3"
     ],
     "list_id_chall_try": [
-        "Fl@g_!"
+        "c554794d-f590-4d9e-8b46-9d83fb4ebab3"
     ],
     "id_game": '365f2236-0ffc-496c-8260-e878dbd15a9c',
     "username": "toto"
@@ -30,10 +30,10 @@ player2 = {
     "id_player": 'e795512c-db6c-4bbe-8a4c-544107d24f0f',
     "id_user": '71335eb2-4360-4515-bd7d-894da5e24e19',
     "list_id_chall_success": [
-        "Fl@g_!"
+        "c554794d-f590-4d9e-8b46-9d83fb4ebab3"
     ],
     "list_id_chall_try": [
-        "Fl@g_!"
+        "c554794d-f590-4d9e-8b46-9d83fb4ebab3"
     ],
     "id_game": '365f2236-0ffc-496c-8260-e878dbd15a9c',
     "username": 'titi'
@@ -81,6 +81,19 @@ game1 = {
 
 games = [game1]
 
+# Ajout de trois joueurs tests dans la base de données
+player1['list_id_chall_success'] = str(player1['list_id_chall_success'])
+player1['list_id_chall_try'] = str(player1['list_id_chall_try'])
+
+player2['list_id_chall_success'] = str(player1['list_id_chall_success'])
+player2['list_id_chall_try'] = str(player1['list_id_chall_try'])
+
+player3['list_id_chall_success'] = str(player1['list_id_chall_success'])
+player3['list_id_chall_try'] = str(player1['list_id_chall_try'])
+
+curs.execute('''INSERT INTO players(id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username ) VALUES (:id_player, :id_user, :list_id_chall_success, :list_id_chall_try , :id_game , :username)''', player1)
+curs.execute('''INSERT INTO players(id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username ) VALUES (:id_player, :id_user, :list_id_chall_success, :list_id_chall_try , :id_game , :username)''', player2)
+curs.execute('''INSERT INTO players(id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username ) VALUES (:id_player, :id_user, :list_id_chall_success, :list_id_chall_try , :id_game , :username)''', player3)
 
 # Get data from DB :
 
@@ -94,32 +107,49 @@ def getPlayerById(id):
     # for player in players:
     #     if player['id_player'] == id:
     #         return player
-    return "c cassé"
+    return "No Player found !", 405
     # TODO getPlayerById : get it working with a DB
 
 def getPlayerByUserId(id):
-    for player in players:
-        if id == player['id_user']:
-            return player
-    return None
+    idUser = str(id)
+    print(idUser)
+    curs.execute('''SELECT * FROM players WHERE id_user = ?''', [idUser])
+    player = curs.fetchall()
+    if player is not None:
+        return player
+    # for player in players:
+    #     if player['id_player'] == id:
+    #         return player
+    return "No Player found !", 405
 
 
 def getPlayerByChallId(chall_id):
     tab_players = []
+    players = getPlayers()
+    chall = "[\'" + chall_id + "\']"
     for player in players:
-        if chall_id in player["list_id_chall_success"]:
+        id_chall = player[2]
+        print(id_chall, 'test, ', chall)
+        if id_chall == chall:
             tab_players.append(player)
-    if len(tab_players) == 0:
-        return None
+    #     if chall_id in player["list_id_chall_success"]:
+    #         tab_players.append(player)
+    # if len(tab_players) == 0:
+    #     return None
     return tab_players
     # TODO getPlayerByChallId : get it working with a DB
 
 
 def getGameById(game_id):
-    for game in games:
-        if game_id == game["id_game"]:
-            return game
-    return None
+    idGame = str(game_id)
+    curs.execute('''SELECT * FROM players WHERE id_game = ?''', [idGame])
+    game = curs.fetchall()
+    if game is not None:
+        return game
+    # for player in players:
+    #     if player['id_player'] == id:
+    #         return player
+    return "No Player found !", 405
     # TODO getGameById get it working with a DB
 
 
@@ -340,8 +370,8 @@ def getPlayersByChallenge():
     valid_key = ["id_challenge", "id_game", "tags", "nb_points", "creator", "name", "description", "flag", "status",
                  "files"]
     rq = request.get_json()
-    if not requestIsCorrect(valid_key, rq):
-        return "Bad informations were given", 405
+    # if not requestIsCorrect(valid_key, rq):
+    #     return "Bad informations were given", 405
     id_chall = rq['id_challenge']
     if not uuidIsCorrect(id_chall):
         return "Bad informations were given", 405
@@ -371,7 +401,7 @@ def getGameByPlayer(id):
     player = getPlayerById(id)
     if player is None:
         return "Player not found", 404
-    game_id = player['id_game']
+    game_id = player[0][4]
     game = getGameById(game_id)
     if game is None:
         return "No game found", 404
