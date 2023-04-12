@@ -5,6 +5,7 @@ RUN apk add git
 RUN pip install flask
 RUN pip install uuid
 RUN pip install re
+RUN pip install sqlite3
 
 WORKDIR /home
 RUN git clone -b players --single-branch https://github.com/perrze/ctf401.git
