@@ -107,8 +107,8 @@ def getPlayerById(id):
     # for player in players:
     #     if player['id_player'] == id:
     #         return player
-    return "No Player found !", 405
-    # TODO getPlayerById : get it working with a DB
+    return "No Player found !", 404
+    # TO DO getPlayerById : get it working with a DB
 
 def getPlayerByUserId(id):
     idUser = str(id)
@@ -120,7 +120,7 @@ def getPlayerByUserId(id):
     # for player in players:
     #     if player['id_player'] == id:
     #         return player
-    return "No Player found !", 405
+    return "No Player found !", 404
 
 
 def getPlayerByChallId(chall_id):
@@ -137,10 +137,10 @@ def getPlayerByChallId(chall_id):
     # if len(tab_players) == 0:
     #     return None
     return tab_players
-    # TODO getPlayerByChallId : get it working with a DB
+    # TO DO getPlayerByChallId : get it working with a DB
 
 
-def getGameById(game_id):
+def getPlayersByGameId(game_id):
     idGame = str(game_id)
     curs.execute('''SELECT * FROM players WHERE id_game = ?''', [idGame])
     game = curs.fetchall()
@@ -149,8 +149,8 @@ def getGameById(game_id):
     # for player in players:
     #     if player['id_player'] == id:
     #         return player
-    return "No Player found !", 405
-    # TODO getGameById get it working with a DB
+    return "No Player found !", 404
+    # TO DO getGameById get it working with a DB
 
 
 # DB modification :
@@ -165,8 +165,8 @@ def addPlayer(verifiedPlayer):
     curs.execute('''INSERT INTO players(id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username ) VALUES (:id_player, :id_user, :list_id_chall_success, :list_id_chall_try , :id_game , :username)''', (id_player, id_user, list_id_chall_success, list_id_chall_try, id_game, username))
     conn.commit()
     return True
-    # TODO addPlayer : get it working with a DB
-    # TODO return true if it's done false if not
+    # TO DO addPlayer : get it working with a DB
+    # TO DO return true if it's done false if not
 
 
 def deletePlayer(player):
@@ -177,8 +177,8 @@ def deletePlayer(player):
     curs.execute('''DELETE FROM players WHERE id_player = ?''', [id_player])
     conn.commit()
     return True
-    # TODO deletePlayer : get it working with a DB
-    # TODO return true if it's done false if not
+    # TO DO deletePlayer : get it working with a DB
+    # TO DO return true if it's done false if not
 
 
 # check values :
@@ -255,7 +255,7 @@ def getPlayers():
     curs.execute('''SELECT * FROM players''')
     playersFromBdd = curs.fetchall()
     return playersFromBdd
-    # TODO getPlayers : get data from DB select * from players should do
+    # TO DO getPlayers : get data from DB select * from players should do
 
 @app.route('/players/jwt', methods=['GET'])
 def getPlayersByJWT():
