@@ -1,6 +1,6 @@
 FROM python:latest
 EXPOSE 5000
-RUN pip install flask, uuid, re, sqlite3
+RUN pip install flask uuid
 COPY players.py /opt/players.py
 WORKDIR /opt
 
