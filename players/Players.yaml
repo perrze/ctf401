@@ -1,10 +1,10 @@
 openapi: 3.1.0
 info:
-  title: Swagger CTF players - OpenAPI 3.1
+  title: CTF players - OpenAPI 3.1
   description: This API was made to defint our project's interface contract for the player's part. Tou will find the URLs we will use to make our requests and build our python API.
   termsOfService: http://swagger.io/terms/
   contact:
-    email: apiteam@swagger.io
+    email: contact@ctf401.fr
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -13,7 +13,7 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-  - url: https://petstore3.swagger.io/api/v3
+  - url: http://api.ctf401.bb0.fr
 tags:
   - name: players
 paths:
@@ -32,7 +32,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Players'
         404:
-          description: No player found
+          description: Player not found
   /players/jwt:
     get:
       tags:
@@ -48,13 +48,15 @@ paths:
             type: string
       responses:
         200:
-          description: Successful Operation
+          description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
-        405:
-          description: Invalid token
+        401:
+          description: Unauthorized
+        404:
+          description: Player not found
   /players/create:
     post:
       tags:
@@ -83,8 +85,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Player"
+        401:
+          description: Unauthorized
         405:
           description: Bad informations were given
+      security:
+        - jwt : []
 
   /players/manage/{id_player}:
     get:
@@ -106,8 +112,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
+        401:
+          description: Unauthorized
         405:
           description: Invalid input
+      security:
+        - jwt : []
     delete:
       tags:
         - players
@@ -123,9 +133,13 @@ paths:
           description: string id of player to delete
       responses:
           200:
-              description: player has been deleted
+            description: Player has been deleted
+          401:
+            description: Unauthorized
           405:
             description: Invalid input
+      security:
+        - jwt : []
     patch:
       tags:
         - players
@@ -147,13 +161,17 @@ paths:
               $ref: '#/components/schemas/Player'
       responses:
         200:
-          description: successful operation
+          description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
+        401:
+          description: Unauthorized
         405:
           description: Bad informations were given
+      security:
+        - jwt : []
     put:
       tags:
         - players
@@ -176,13 +194,17 @@ paths:
         required: true
       responses:
         200:
-          description: successful operation
+          description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
+        401:
+          description: Unauthorized
         405:
           description: Bad informations were given
+      security:
+        - jwt : []
   /players/challenges:
     post:
       tags:
@@ -224,6 +246,9 @@ paths:
                 id_chall:
                   type: string
                   example: 572eefbb-c07b-40af-b156-c936b115d024
+                success:
+                  type: boolean
+                  example: True
       responses:
         200:
           description: Successful operation
@@ -231,10 +256,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
+        401:
+          description: Unauthorized
         404:
-          description: "No player found"
+          description: No player found
         405:
-          description: "Bad informations were given"
+          description: Bad informations were given
+      security:
+        - jwt : []
   /players/team/{id_player}:
     get:
       tags:
@@ -373,3 +402,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Player/properties/id_player"
+  securitySchemes:
+    jwt:
+      type: apiKey
+      name: jwt
+      in: header

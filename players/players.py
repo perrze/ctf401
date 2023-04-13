@@ -22,9 +22,9 @@ curs.execute('''CREATE TABLE IF NOT EXISTS players(id_player STRING PRIMARY KEY,
 conn.commit()
 
 global receivedToken
-receivedToken ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoiNGQ4NGEwN2YtZjA2NC00Mzg1LTk3NzgtNDI3YTAxMzk0YzRhIiwiZXhwaXJlIjoxNjgxNDgxODYzLjEzNTc5NjN9.zT696k3kg-hfx_Sq53GCoB8jQkfYsT_XIrr_mnDXWbs"
+receivedToken =""
 global expireAt
-expireAt = 1681481863.1357963
+expireAt = 0.0
 
 """ These next function allow us to authenticate an user and check jwt token validity and rights."""
 
@@ -67,7 +67,10 @@ def check_if_user_access(request,role):
     return True
   else:
     return False
+
+
 key_player = ["id_player","id_user","list_id_chall_success","list_id_chall_try","id_game","username"]
+
 player1 = {
     "id_player": '34afa4d7-2bcb-4290-9906-56ea3f0553eb',
     "id_user": 'f97c4650-4795-4232-9a62-85eb97be71aa',
@@ -246,6 +249,13 @@ def deletePlayer(player):
     # TO DO deletePlayer : get it working with a DB
     # TO DO return true if it's done false if not
 
+def modifyPlayer(id_player, rowsToChange, valuesToChange):
+    for row,value in rowsToChange, valuesToChange:
+        curs.execute(f'''UPDATE players SET {row} = {value} WHERE id_player = {id_player} ''')
+    conn.commit()
+    player = getPlayerById(id_player)
+    return player
+
 
 # check values :
 
@@ -345,13 +355,14 @@ def getPlayersByJWT():
             return "No player found", 404
         return player
     except requests.exceptions.InvalidSchema:
-        return "c cassé"
+        return "Internal Server Error",500
 
-    # TODO getPlayersByJWT : to test with users API once its working
 
 
 @app.route('/players/create', methods=['POST'])
 def createPlayers():
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
     createdPlayer = {
         "id_player": str(uuid.uuid4()),
         "id_user": "",
@@ -380,6 +391,8 @@ def createPlayers():
 
 @app.route('/players/manage/<uuid>', methods=['GET'])
 def managePlayersGet(uuid):
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
     if not uuidIsCorrect(uuid):
         return "Bad id were given !", 405
     player = getPlayerById(uuid)
@@ -388,6 +401,8 @@ def managePlayersGet(uuid):
 
 @app.route('/players/manage/<uuid>', methods=['DELETE'])
 def delPlayer(uuid):
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
     print(uuid)
     if not uuidIsCorrect(uuid):
         return "Bad id wer given !", 405
@@ -398,6 +413,8 @@ def delPlayer(uuid):
 
 @app.route('/players/manage/<uuid>', methods=['PUT'])
 def putPlayer(uuid):
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
     valid_keys = ["id_game", "username", "list_id_chall_success", "list_id_chall_try"]
     try:
         update_infos = request.get_json()
@@ -420,6 +437,8 @@ def putPlayer(uuid):
 
 @app.route('/players/manage/<uuid>', methods=['PATCH'])
 def patchPlayer(uuid):
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
     print(uuid)
     valid_keys = ['id_game', 'username', 'list_id_chall_success', 'list_id_chall_try']
     update_infos = request.get_json()
@@ -457,8 +476,45 @@ def getPlayersByChallenge():
 
 @app.route('/players/addchallenges', methods=['POST'])
 def addChallenges():
-    return 'coucou, ça marche pas encore, bientôt'
-    # TODO addChallenges
+    if not (check_if_user_access(request, "admin")):
+        return "Unauthorized", 401
+
+    valid_keys = ["id_player","id_chall","success"]
+    rq = request.get_json()
+
+    if not requestIsCorrect(valid_keys, rq):
+        return "Bad informations were given", 405
+
+    if (not uuidIsCorrect(rq["id_player"])) or (not uuidIsCorrect(rq["id_chall"])):
+        return "Bad informations were given", 405
+
+    player = getPlayerById(rq["id_player"])
+    if player is None:
+        return "Player not found",404
+
+    if rq["success"]:
+        rowsToChange = ["list_id_chall_success","list_id_chall_try"]
+
+        list_id_chall_success = player["list_id_chall_success"]
+        list_id_chall_success.append(rq["id_chall"])
+        list_id_chall_try = player["list_id_chall_try"]
+        list_id_chall_try.append(rq["id_chall"])
+
+        valuesToChange = [list_id_chall_success,list_id_chall_try]
+
+        player = modifyPlayer(rq["id_player"], rowsToChange, valuesToChange)
+    else:
+        rowToChange = ["list_id_chall_success"]
+
+        list_id_chall_try = player["list_id_chall_try"]
+        list_id_chall_try.append(rq["id_chall"])
+
+        valueToChange = [list_id_chall_try]
+
+        player = modifyPlayer(rq["id_player"], rowToChange, valueToChange)
+
+    return player,200
+
 
 
 @app.route('/players/team/<id>', methods=['GET'])
