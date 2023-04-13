@@ -18,7 +18,7 @@ services:
     ports:
       - 5002:5000
     volumes:
-      - ./players:opt/players
+      - ./players:/opt/players
     environment:
       - BASE_URL=http://api.ctf401.bb0.fr
       - CREDS_LOCATION=/players/creds.json

@@ -1,6 +1,6 @@
 FROM python:latest
 EXPOSE 5000
-RUN pip install flask uuid flask_cors
+RUN pip install flask uuid flask_cors requests
 COPY players.py /opt/players.py
 WORKDIR /opt
 
