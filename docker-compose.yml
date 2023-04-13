@@ -1,0 +1,55 @@
+version: "1.0"
+services:
+  users:
+    #image: ctf401/users
+    build: ./users
+    ports:
+      - 5001:5000
+    volumes:
+      - ./users:/opt/users
+    environment:
+      - BASE_URL=http://api.ctf401.bb0.fr
+#      - USE_VARIABLES=False
+    labels:
+      - "traefik.http.routers.users.rule=Host(`api.ctf401.bb0.fr`) && PathPrefix(`/users`)"
+  # players:
+  #   build: ./players
+  #   ports:
+  #     - 5002:5000
+  # teams:
+  #   build: ./teams
+  #   ports:
+  #     - 5003:5000
+  # challenges:
+  #   build: ./challenges
+  #   ports:
+  #     - 5004:5000
+  # games:
+  #   build: ./games
+  #   ports:
+  #     - 5005:5000
+  frontend:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "5006:80"
+    volumes:
+      - ./frontend:/srv/
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    labels:
+      - "traefik.http.routers.frontend.rule=Host(`ctf401.bb0.fr`)"
+
+
+  reverse-proxy:
+    image: traefik:v2.9
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # labels:
+    # - traefik.frontend.headers.customResponseHeaders=Access-Control-Allow-Origin:*
