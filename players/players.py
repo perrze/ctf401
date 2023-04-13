@@ -1,18 +1,74 @@
-import re
-import uuid
-import sqlite3
+import json, requests, sqlite3, uuid, re
+from time import time
+from urllib.parse import quote_plus
+
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from os import getenv, environ
 
 conn = sqlite3.connect('./players.db', check_same_thread=False)
 curs = conn.cursor()
 
-import requests
-from flask import Flask, jsonify, request
-
 app = Flask(__name__)
+CORS(app)
+if "CREDS_LOCATION" in environ:
+    CREDS_LOCATION = getenv("CREDS_LOCATION")
+else:
+    CREDS_LOCATION = "players/creds.json"
+
+BASE_URL_USERS = "http://localhost:5001"
+BASE_URL_PLAYERS = "http://localhost:5002"
 
 curs.execute('''CREATE TABLE IF NOT EXISTS players(id_player STRING PRIMARY KEY, id_user STRING, list_id_chall_success STRING, list_id_chall_try STRING, id_game STRING, username STRING)''')
 conn.commit()
 
+global receivedToken
+receivedToken ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoiNGQ4NGEwN2YtZjA2NC00Mzg1LTk3NzgtNDI3YTAxMzk0YzRhIiwiZXhwaXJlIjoxNjgxNDgxODYzLjEzNTc5NjN9.zT696k3kg-hfx_Sq53GCoB8jQkfYsT_XIrr_mnDXWbs"
+global expireAt
+expireAt = 1681481863.1357963
+
+""" These next function allow us to authenticate an user and check jwt token validity and rights."""
+
+def connect_services_to_auth():
+    global receivedToken
+    global expireAt
+    with open(CREDS_LOCATION) as f:
+        creds = json.load(f)
+        email = creds["email"]
+        password = creds["password"]
+
+    result = requests.get(BASE_URL_USERS + "/users/login?email=" + quote_plus(email) + "&password=" + quote_plus(password))
+    if result.status_code == 200:
+        jsonLoaded = json.loads(result.content)
+        receivedToken = jsonLoaded["token"]
+        expireAt = jsonLoaded["expire"]
+        return True
+    else:
+        return False
+
+
+def check_connected_to_auth():
+    global receivedToken
+    global expireAt
+    if receivedToken == "" or expireAt <= time():
+        temp = connect_services_to_auth()
+        return temp
+    else:
+        return True
+
+
+def check_if_user_access(request,role):
+  token = None
+  if "jwt" in request.headers:
+      token = request.headers["jwt"]
+  if not token:
+      return False
+  result = requests.post(BASE_URL_USERS+"/users/check/"+role,json={"token":token})
+  if result.status_code==200:
+    return True
+  else:
+    return False
+key_player = ["id_player","id_user","list_id_chall_success","list_id_chall_try","id_game","username"]
 player1 = {
     "id_player": '34afa4d7-2bcb-4290-9906-56ea3f0553eb',
     "id_user": 'f97c4650-4795-4232-9a62-85eb97be71aa',
@@ -41,7 +97,7 @@ player2 = {
 
 player3 = {
     "id_player": '5d8422a8-8246-4f1c-a904-62d83cad9c0b',
-    "id_user": 'ada44e53-3374-450f-8b23-6cf9e914305b',
+    "id_user": '31a1d300-4224-4f5b-a1ab-94129f264cc6',
     "list_id_chall_success": [
         "e57b5f14-02e3-4e86-85cb-cef05a22eaf6",
         "35711541-3845-4c84-8a09-33f76194597e"
@@ -115,12 +171,15 @@ def getPlayerByUserId(id):
     print(idUser)
     curs.execute('''SELECT * FROM players WHERE id_user = ?''', [idUser])
     player = curs.fetchall()
-    if player is not None:
-        return player
+    p = {key_player[i]: player[0][i] for i in range(len(key_player))}
+    p["list_id_chall_success"] = eval(p["list_id_chall_success"])
+    p["list_id_chall_try"] = eval(p["list_id_chall_try"])
+    if p is not None:
+        return p
     # for player in players:
     #     if player['id_player'] == id:
     #         return player
-    return "No Player found !", 404
+    return None
 
 
 def getPlayerByChallId(chall_id):
@@ -259,19 +318,21 @@ def getPlayers():
 
 @app.route('/players/jwt', methods=['GET'])
 def getPlayersByJWT():
-    token = {'token': request.args['token_jwt']}
+    token = {'jwt': request.args['jwt']}
+    print(token)
     try:    # Temp !!!
-        url = "localhost:5000/users/check/id_user"
-        rq = requests.post(url, json=token)
+        url = BASE_URL_USERS + "/users/check/jwt"
+        rq = requests.get(url, headers=token)
         if not rq.status_code == 200:
-            return "Invalid token", 405
+            return "Unauthorized", 401
         id_user = rq.json()["id_user"]
+        print(id_user)
         player = getPlayerByUserId(id_user)
         if player is None:
             return "No player found", 404
         return player
     except requests.exceptions.InvalidSchema:
-        return players[0]
+        return "c cassé"
 
     # TODO getPlayersByJWT : to test with users API once its working
 
@@ -402,7 +463,7 @@ def getGameByPlayer(id):
     if player is None:
         return "Player not found", 404
     game_id = player[0][4]
-    game = getGameById(game_id)
+    game = getPlayersByGameId(game_id)
     if game is None:
         return "No game found", 404
     return game, 200
@@ -446,4 +507,4 @@ def getGameByPlayer(id):
 # print(result)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", port=5002)
