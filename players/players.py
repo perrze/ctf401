@@ -1,16 +1,15 @@
 import json, requests, sqlite3, uuid, re
 from time import time
 from urllib.parse import quote_plus
-
+#from flask_cors import CORS
 from flask import Flask, jsonify, request
-from flask_cors import CORS
 from os import getenv, environ
 
 conn = sqlite3.connect('./players.db', check_same_thread=False)
 curs = conn.cursor()
 
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
 if "CREDS_LOCATION" in environ:
     CREDS_LOCATION = getenv("CREDS_LOCATION")
 else:
@@ -158,12 +157,15 @@ def getPlayerById(id):
     print(idPlayer)
     curs.execute('''SELECT * FROM players WHERE id_player = ?''', [idPlayer])
     player = curs.fetchall()
-    if player is not None:
-            return player
+    p = {key_player[i]: player[0][i] for i in range(len(key_player))}
+    p["list_id_chall_success"] = eval(p["list_id_chall_success"])
+    p["list_id_chall_try"] = eval(p["list_id_chall_try"])
+    if p is not None:
+            return p
     # for player in players:
     #     if player['id_player'] == id:
     #         return player
-    return "No Player found !", 404
+    return "No Player found !", 405
     # TO DO getPlayerById : get it working with a DB
 
 def getPlayerByUserId(id):
@@ -179,16 +181,15 @@ def getPlayerByUserId(id):
     # for player in players:
     #     if player['id_player'] == id:
     #         return player
-    return None
+    return "No player found !", 405
 
 
 def getPlayerByChallId(chall_id):
     tab_players = []
     players = getPlayers()
-    chall = "[\'" + chall_id + "\']"
+    chall = chall_id
     for player in players:
-        id_chall = player[2]
-        print(id_chall, 'test, ', chall)
+        id_chall = player['list_id_chall_success'][0]
         if id_chall == chall:
             tab_players.append(player)
     #     if chall_id in player["list_id_chall_success"]:
@@ -203,8 +204,14 @@ def getPlayersByGameId(game_id):
     idGame = str(game_id)
     curs.execute('''SELECT * FROM players WHERE id_game = ?''', [idGame])
     game = curs.fetchall()
-    if game is not None:
-        return game
+    listPlayers = []
+    for player in game:
+        p = {key_player[i]: player[i] for i in range(len(key_player))}
+        p["list_id_chall_success"] = eval(p["list_id_chall_success"])
+        p["list_id_chall_try"] = eval(p["list_id_chall_try"])
+        listPlayers.append(p)
+    if listPlayers is not None:
+        return listPlayers
     # for player in players:
     #     if player['id_player'] == id:
     #         return player
@@ -313,7 +320,13 @@ def hello_world():  # put application's code here
 def getPlayers():
     curs.execute('''SELECT * FROM players''')
     playersFromBdd = curs.fetchall()
-    return playersFromBdd
+    listPlayers = []
+    for player in playersFromBdd:
+        p = {key_player[i]: player[i] for i in range(len(key_player))}
+        p["list_id_chall_success"] = eval(p["list_id_chall_success"])
+        p["list_id_chall_try"] = eval(p["list_id_chall_try"])
+        listPlayers.append(p)
+    return listPlayers
     # TO DO getPlayers : get data from DB select * from players should do
 
 @app.route('/players/jwt', methods=['GET'])
@@ -428,11 +441,10 @@ def patchPlayer(uuid):
 
 @app.route('/players/challenges', methods=['POST'])
 def getPlayersByChallenge():
-    valid_key = ["id_challenge", "id_game", "tags", "nb_points", "creator", "name", "description", "flag", "status",
-                 "files"]
+    valid_key = ["id_challenge"]
     rq = request.get_json()
-    # if not requestIsCorrect(valid_key, rq):
-    #     return "Bad informations were given", 405
+    if not requestIsCorrect(valid_key, rq):
+        return "Bad informations were given", 405
     id_chall = rq['id_challenge']
     if not uuidIsCorrect(id_chall):
         return "Bad informations were given", 405
@@ -462,7 +474,7 @@ def getGameByPlayer(id):
     player = getPlayerById(id)
     if player is None:
         return "Player not found", 404
-    game_id = player[0][4]
+    game_id = player['id_game']
     game = getPlayersByGameId(game_id)
     if game is None:
         return "No game found", 404
