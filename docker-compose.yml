@@ -12,6 +12,19 @@ services:
 #      - USE_VARIABLES=False
     labels:
       - "traefik.http.routers.users.rule=Host(`api.ctf401.bb0.fr`) && PathPrefix(`/users`)"
+  players:
+    # image ctf401/players
+    build: ./players
+    ports:
+      - 5002:5000
+    volumes:
+      - ./players:opt/players
+    environment:
+      - BASE_URL=http://api.ctf401.bb0.fr
+      - CREDS_LOCATION=/players/creds.json
+    labels:
+      - "traefik.http.routers.users.rule=Host(`api.ctf401.bb0.fr`) && PathPrefix(`/players`)"
+
   # players:
   #   build: ./players
   #   ports:

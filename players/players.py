@@ -1,7 +1,7 @@
 import json, requests, sqlite3, uuid, re
 from time import time
 from urllib.parse import quote_plus
-#from flask_cors import CORS
+from flask_cors import CORS
 from flask import Flask, jsonify, request
 from os import getenv, environ
 
@@ -9,14 +9,19 @@ conn = sqlite3.connect('./players.db', check_same_thread=False)
 curs = conn.cursor()
 
 app = Flask(__name__)
-#CORS(app)
+CORS(app)
 if "CREDS_LOCATION" in environ:
     CREDS_LOCATION = getenv("CREDS_LOCATION")
 else:
     CREDS_LOCATION = "players/creds.json"
+if "BASE_URL" in environ:
+    BASE_URL_USERS = getenv("BASE_URL")
+else:
+    BASE_URL_USERS = "http://localhost:5001"
 
-BASE_URL_USERS = "http://localhost:5001"
-BASE_URL_PLAYERS = "http://localhost:5002"
+
+# BASE_URL_USERS = "http://localhost:5001"
+# BASE_URL_PLAYERS = "http://localhost:5002"
 
 curs.execute('''CREATE TABLE IF NOT EXISTS players(id_player STRING PRIMARY KEY, id_user STRING, list_id_chall_success STRING, list_id_chall_try STRING, id_game STRING, username STRING)''')
 conn.commit()
