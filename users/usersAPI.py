@@ -6,6 +6,7 @@ import logging
 import hashlib
 import jwt
 from os import getenv, environ
+import sys
 from time import time
 import requests
 import sqlite3
@@ -153,35 +154,46 @@ jwtDB = {
 # ---------------------------------------------------------------------------- #
 
 
-def check_user_is_well_formed(user, verifyPassword=True):
+def check_user_is_well_formed(user, verifyPassword=True,verifyEmail=True):
+    print(user)
     notBad = True
     whatGood = {"id_user": True, "email": True,
                 "password": True, "roles": True, "description": True}
     uuidRegex = re.compile(
         r'^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$')
+    
     emailRegex = re.compile(
         r"^(?P<identifiant>[\w\-\.\+]+)@(?P<operateur>[\w\-\.]+\.(?P<TLD>[a-z]+))$")
     descriptionRegex = re.compile(r"^[\w \-àâçéèêëîïôûùüÿñæœ.]*$")
     passwordRegex = re.compile(
-        r"^(?=[^a-z]*[a-z])(?=[^A-Z]*[A-Z])(?=\D*\d)(?=[^!\^#%@?°€$£*-]*[!\^#%&@?°€$£*-])[A-Za-z0-9!\^#%@?°€$£*-]{8,128}$")
+        r"^(?=[^a-z]*[a-z])(?=[^A-Z]*[A-Z])(?=\D*\d)(?=[^!\^#%@?°€$£*-]*[!\^#%@?°€$£*-])[A-Za-z0-9!\^#%@?°€$£*-]{8,128}$")
     rolesList = ["admin", "player"]
     if not (uuidRegex.match(user["id_user"])):
         logging.debug(' UUID regex False')
         notBad = False
         whatGood["id_user"] = False
-    if not (emailRegex.match(user["email"])):
-        logging.debug(' Email regex False')
-        notBad = False
-        whatGood["email"] = False
+    # print("EMAIL:"+user["email"], file=sys.stderr) 
+    if verifyEmail:
+        if not (emailRegex.match(user["email"])) or not(check_email_not_exist(user["email"])):
+            logging.debug(' Email regex False')
+            notBad = False
+            whatGood["email"] = False
     if not (descriptionRegex.match(user["description"])):
         logging.debug(' Description regex False')
         notBad = False
         whatGood["description"] = False
-    for role in user["roles"]:
-        if not (role in rolesList):
-            logging.debug(' Roles regex False')
-            notBad = False
-            whatGood["roles"] = False
+    if type(user["roles"])==str:
+        user["roles"]=eval(user["roles"])
+    try:
+        for role in user["roles"]:
+            if not (role in rolesList):
+                logging.debug(' Roles regex False')
+                notBad = False
+                whatGood["roles"] = False
+    except:
+        logging.debug(' Roles regex False')
+        notBad = False
+        whatGood["roles"] = False
     if verifyPassword:  # Used for Patch because hash not matching
         if not (passwordRegex.match(user["password"])):
             logging.debug('Password regex False')
@@ -376,6 +388,7 @@ def return_position_in_array_user(userid):
 
 
 def modify_user(userid, user):
+    print("Modify User", file=sys.stderr)    
     # Variables
     if variables:
         position = return_position_in_array_user(userid)
@@ -564,7 +577,7 @@ def getUserById(userid):
 
 @app.route('/users/<userid>', methods=['PUT'])
 def updateUser(userid):
-    if not (check_if_user_access(request, ["admin"])) and not (check_if_user_access(request, userid)):
+    if not (check_if_user_access(request, ["admin",userid])):
         return "Unauthorized", 401
     try:
         data = request.get_json()
@@ -574,6 +587,7 @@ def updateUser(userid):
     if len(data) != 5:
         return 'Bad JSON', 400
     for key in data:
+        data[key]=str(data[key]) # To prevent problems in treatement
         if not (key in keyAllowed):
             return 'Bad JSON', 400
     if not (check_uuid_is_well_formed(userid)):
@@ -598,42 +612,48 @@ def updateUser(userid):
 
 @app.route('/users/<userid>', methods=['PATCH'])
 def updatePatchUser(userid):
-    if not (check_if_user_access(request, ["admin", userid])):
+    if not (check_if_user_access(request, ["admin",userid])):
         return "Unauthorized", 401
     try:
         data = request.get_json()
     except:
         return 'Bad JSON', 400
     keyAllowed = ["id_user", "email", "password", "roles", "description"]
-    if len(data) > 5:
+    if len(data) > 5 or len(data) <= 0:
         return 'Bad JSON', 400
     for key in data:
+        data[key]=str(data[key]) # To prevent problems in treatement
         if not (key in keyAllowed):
             return 'Bad JSON', 400
-
+    if "password" in data:
+        verifyPassword=True
+    else:
+        verifyPassword=False
+    if "email" in data:
+        verifyEmail = True
+    else:
+        verifyEmail = False
     if not (check_uuid_is_well_formed(userid)):
         return 'Invalid id_user supplied', 400
     user = get_properties_from_userid(userid)
     if user:
-        try:
+        if "id_user" in data:
             if (data["id_user"] != user["id_user"]):
                 return 'Do not modify id_user', 400
-        except:
-            logging.debug("No id_user given")
-        for key in data:
-            user[key] = data[key]
-        verifyPassword = True
-        if not ("password" in data):
-            verifyPassword = False
-        notBad, whatGood = check_user_is_well_formed(
-            user, verifyPassword=verifyPassword)
+        for key in keyAllowed:
+            if not(key in data):
+                data[key]=user[key]
+        print("Data to check"+str(data), file=sys.stderr)    
+        notBad, whatGood = check_user_is_well_formed(data,verifyPassword=verifyPassword,verifyEmail=verifyEmail)
         if (notBad):
-            if verifyPassword:
-                user["password"] = hash_password(data["password"])
-            modify_user(userid, user)
+            data["password"] = hash_password(data["password"])
+            for key in data:
+                user[key] = data[key]
+            modify_user(userid, data)
             return jsonify(user), 200
         else:
             return jsonify(whatGood), 409
+
     else:
         return 'User not found', 404
 
@@ -760,5 +780,5 @@ def checkJwt():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    app.run(host="0.0.0.0")
+    # logging.basicConfig(level=logging.DEBUG)
+    app.run(host="0.0.0.0",debug="run")

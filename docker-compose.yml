@@ -7,6 +7,8 @@ services:
       - 5001:5000
     volumes:
       - ./users:/opt/users
+      # Temp for dev
+      - ./users/usersAPI.py:/opt/usersAPI.py
     environment:
       - BASE_URL=http://api.ctf401.bb0.fr
 #      - USE_VARIABLES=False
