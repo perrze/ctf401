@@ -27,10 +27,9 @@
       let confirmPassword = $("#confirmPassword").val();
       // console.log("Confirm"+confirmPassword)
       if (password!=confirmPassword){
-        $('#passwordInfo').html('Passwords are differents');
-        $('#passwordInfo').removeAttr('hidden');
+        $('#different').removeAttr('hidden');
       }else{
-        $('#passwordInfo').hide();
+        $('#different').hide();
       }
     }
 
@@ -53,8 +52,8 @@
             console.log(xhr.responseText);
           },
           409: function(xhr) {
-            $('#passwordInfo').html('Bad password, must contain: 8 chars (A special: #%@?°€$£*-, High and Low case)');
-            $('#passwordInfo').removeAttr('hidden');
+            $('#passwordInfo').removeClass('text-muted')
+            $('#passwordInfo').addClass('text-danger');
           }
 
 
@@ -63,12 +62,12 @@
     }
 
     function changeEmail() {
-      let password = $("#password").val();
+      let email = $("#email").val();
       $.ajax({
         url: BASE_URL + '/users/'+Cookies.get("userid"),
         type: 'patch',
         headers: { jwt: Cookies.get("jwt") },
-        data: JSON.stringify({password:password}),
+        data: JSON.stringify({email:email}),
         contentType: 'application/json; charset=utf-8',
         dataType: "json",
         statusCode: {
@@ -80,7 +79,11 @@
             console.log("401");
             console.log(xhr.responseText);
 
+          },
+          409: function(xhr) {
+
           }
+
 
         }
       });
@@ -109,18 +112,20 @@
           <button type="button" onclick="changePassword()" class="btn btn-primary" >Submit</button>
         </div>
       </div>
-      <p id="passwordInfo" class="text-danger mb-3" hidden></p>
-
+     
+      <p id="passwordInfo" class="text-muted">Password must contain: 8 chars (A special: #%@?°€$£*-, High and Low case)</p>
+      <p id="different" class="text-danger mb-3" hidden >Passwords are differents</p>
       <h3>Change your email</h3>
-      <form class="row my-3 gy-2 gx-3 align-items-center">
+      <div class="row my-3 gy-2 gx-3 align-items-center">
         <div class="col-auto">
           <label class="visually-hidden" for="email">Email</label>
           <input type="email" class="form-control" id="email" placeholder="user@example.com">
+          <p id="emailExist" class="text-danger mb-3" hidden>Email already exists in database</p>
         </div>
         <div class="col-auto">
-          <button type="submit" class="btn btn-primary">Submit</button>
+          <button type="button" class="btn btn-primary" onclick="changeEmail()">Submit</button>
         </div>
-      </form>
+      </div>
 
       <h3>Change your description</h3>
       <form class="row my-3 gy-2 gx-3 align-items-center">
