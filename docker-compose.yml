@@ -25,7 +25,7 @@ services:
       - BASE_URL=http://api.ctf401.bb0.fr
       - CREDS_LOCATION=/players/creds.json
     labels:
-      - "traefik.http.routers.users.rule=Host(`api.ctf401.bb0.fr`) && PathPrefix(`/players`)"
+      - "traefik.http.routers.players.rule=Host(`api.ctf401.bb0.fr`) && PathPrefix(`/players`)"
 
   # players:
   #   build: ./players
