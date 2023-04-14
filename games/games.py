@@ -1,8 +1,9 @@
 from flask import Flask, jsonify, request
-import re, uuid, sqlite3
-import os
+import re, uuid, sqlite3, jwt, os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 #if "BASE_URL" in os.environ:
 #    BASE_URL=os.getenv("BASE_URL")
@@ -13,20 +14,17 @@ uuid_regex = r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-
 datetime_regex = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'
 not_empty_regex = r'^.+$'
 
-#def check_if_user_access(request,role):
-#  token = None
-#  if "jwt" in request.headers:
-#      token = request.headers["jwt"]
-#  if not token:
-#      return False
-#  result = requests.post(BASE_URL+":5001/users/check/"+role,json={"token":token})
-#  if result.status_code==200:
-#    return True
-#  else:
-#    return False
-
-#if not(check_if_user_access(request,"admin")):
-#      return "Unauthorized", 401
+def check_if_user_access(request,role):
+    token = None
+    if "jwt" in request.headers:
+        token = request.headers["jwt"]
+        if not token:
+            return False
+            result = requests.post("http://localhsot:5001/users/check/"+role,json={"token":token})
+    if result.status_code==200:
+        return True
+    else:
+        return False
 
 @app.route("/")
 def index():
@@ -86,6 +84,8 @@ def getGameByIdDates(id_game):
 
 @app.route('/games/<id_game>/modify', methods=['PATCH'])
 def update_game(id_game):
+#    if not(check_if_user_access(request,"admin")):
+#        return "Unauthorized", 401
 	try:
 		data = request.get_json()
 		conn = sqlite3.connect('games.db')
@@ -119,6 +119,8 @@ def update_game(id_game):
 
 @app.route('/games/create', methods=['POST'])
 def create_game():
+#    if not(check_if_user_access(request,"admin")):
+#        return "Unauthorized", 401
 	try:
 		data = request.get_json()
 		id_game = str(uuid.uuid4())
@@ -146,6 +148,8 @@ def create_game():
 
 @app.route('/games/<id_game>/delete', methods=['DELETE'])
 def delete_game(id_game):
+#    if not(check_if_user_access(request,"admin")):
+#        return "Unauthorized", 401
 	try:
 		conn = sqlite3.connect('games.db')
 		c = conn.cursor()
@@ -179,7 +183,6 @@ def method_not_allowed(error):
 @app.errorhandler(500)
 def internal_server_error(error):
 	return jsonify(f"Internal Server Error: {error}", 500)
-
 
 if __name__ == '__main__':
 	logging.basicConfig(level=logging.DEBUG)
