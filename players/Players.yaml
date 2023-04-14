@@ -1,10 +1,10 @@
 openapi: 3.1.0
 info:
-  title: Swagger CTF players - OpenAPI 3.1
+  title: CTF players - OpenAPI 3.1
   description: This API was made to defint our project's interface contract for the player's part. Tou will find the URLs we will use to make our requests and build our python API.
   termsOfService: http://swagger.io/terms/
   contact:
-    email: apiteam@swagger.io
+    email: contact@ctf401.fr
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -13,7 +13,7 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-  - url: https://petstore3.swagger.io/api/v3
+  - url: http://api.ctf401.bb0.fr
 tags:
   - name: players
 paths:
@@ -25,18 +25,44 @@ paths:
       description: This URL will be used to get the list of all players. It doesn't require any parameters and will return an array of 'Player' type objects.
       operationId: listPlayers
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Players'
+        404:
+          description: Player not found
+  /players/jwt:
+    get:
+      tags:
+        - players
+      summary: Get a player with a jwt token
+      description: This URL will return a player if the jwt token is valid. It takes a jwt token in query.
+      operationId: getPlayerByJWT
+      parameters:
+        - name: token_jwt
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        401:
+          description: Unauthorized
+        404:
+          description: Player not found
   /players/create:
     post:
       tags:
         - players
       summary: Create player
-      description: This URL can create a player. It takes 3 parameters (id_user, username and id_game) and will return the created player.
+      description: This URL can create a player. It takes 3 parameters (id_user, username and id_game) and will return the created player. By default, list_id_chall_succes and list_id_chall_try will be initialiased as an empty list.
       operationId: createPlayer
       requestBody:
         description: player's info
@@ -53,15 +79,19 @@ paths:
                   type: string
         required: true
       responses:
-        '200':
+        200:
           description: Successful operation, the player have been added to the database.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Player"
-        '405':
+        401:
+          description: Unauthorized
+        405:
           description: Bad informations were given
-          
+      security:
+        - jwt : []
+
   /players/manage/{id_player}:
     get:
       tags:
@@ -76,14 +106,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
-        '405':
+        401:
+          description: Unauthorized
+        405:
           description: Invalid input
+      security:
+        - jwt : []
     delete:
       tags:
         - players
@@ -99,12 +133,18 @@ paths:
           description: string id of player to delete
       responses:
           200:
-              description: player has been deleted
+            description: Player has been deleted
+          401:
+            description: Unauthorized
+          405:
+            description: Invalid input
+      security:
+        - jwt : []
     patch:
       tags:
         - players
       summary: Partially Update a player
-      description: Use this URL to update some parts of the player's informations. Can be used to add him to a game (just change the 'id_game' field). It need the player's ID in the URL and the informations to patch in the request body and won't return anything (except the success string).
+      description: Use this URL to update some parts of the player's informations. Can be used to add him to a game (just change the 'id_game' field). It need the player's ID in the URL and the informations to patch in the request body and will return the modified player object.
       operationId: patchPlayer
       parameters:
         - name: id_player
@@ -120,17 +160,23 @@ paths:
             schema:
               $ref: '#/components/schemas/Player'
       responses:
-        '200':
-          description: successful operation
+        200:
+          description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
+        401:
+          description: Unauthorized
+        405:
+          description: Bad informations were given
+      security:
+        - jwt : []
     put:
       tags:
         - players
       summary: Update all the player's informations
-      description: This URL will be used to update every informations of a player. It need the URL of that player in the URL and the new informations on the request body and won't return anything (except the success string)
+      description: This URL will be used to update every informations of a player. It need the URL of that player in the URL and the new informations on the request body and will return the modified player object.
       operationId: updateUtilisateur
       parameters:
         - name: id_player
@@ -147,12 +193,18 @@ paths:
               $ref: '#/components/schemas/Player'
         required: true
       responses:
-        '200':
-          description: successful operation
+        200:
+          description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Player'
+        401:
+          description: Unauthorized
+        405:
+          description: Bad informations were given
+      security:
+        - jwt : []
   /players/challenges:
     post:
       tags:
@@ -167,14 +219,51 @@ paths:
               $ref: "#/components/schemas/Challenge"
         required: true
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Players"
-        '405':
+        405:
           description: Invalid input
+  /players/addchallenges:
+    post:
+      tags:
+        - players
+      summary: Add a challenge to player
+      description: This URL allow us to add a challenge into list_id_chall_try and into list_id_chall_success if the player has succeed.
+      operationId: addChallenge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_player:
+                  type: string
+                  example: 8cfc578b-6d1c-4ecf-b226-a10243e73f07
+                id_chall:
+                  type: string
+                  example: 572eefbb-c07b-40af-b156-c936b115d024
+                success:
+                  type: boolean
+                  example: True
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        401:
+          description: Unauthorized
+        404:
+          description: No player found
+        405:
+          description: Bad informations were given
+      security:
+        - jwt : []
   /players/team/{id_player}:
     get:
       tags:
@@ -190,14 +279,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Team"
-        '405':
-          description: Bad id given
+        404:
+          description: Player not found
   /players/game/{id_player}:
     get:
       tags:
@@ -213,12 +302,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Game'
+        405:
+          description: Invalid input
 
 components:
   schemas:
@@ -241,12 +332,12 @@ components:
           type: array
           items:
             type: string
-            example: Fl@g_!
+            example: 7fed7d0c-16ad-4893-8827-30cb586d96ad
         list_id_chall_try:
           type: array
           items:
             type: string
-            example: Fl@g_!
+            example: 7fed7d0c-16ad-4893-8827-30cb586d96ad
         id_game:
           $ref: "#/components/schemas/Game/properties/id_game"
     Challenge:
@@ -311,3 +402,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Player/properties/id_player"
+  securitySchemes:
+    jwt:
+      type: apiKey
+      name: jwt
+      in: header
